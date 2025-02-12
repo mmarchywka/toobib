@@ -1,0 +1,175 @@
+#!/bin/bash
+
+SELF="$0"
+SRC=toobib.h
+DEST=toobib.out
+MAINDEF="TEST_toobib__"
+
+. cpp_proj_defines
+
+LINK="$MMCD_LINK -lxml2 -lpthread"
+
+NEWF=" -Wno-unused-but-set-variable "
+
+#COMPILER="$MMCD_COMPILER $NEWF "
+COMPILER="$MMCD_COMPILER "
+INCDIR="  -MMD -MF toobib.deps $MMCD_INCDIR -I /usr/include/libxml2 "  # " -I.. " 
+
+# just move it local for now 
+#SRC=$MMCD_SRCDIR/$SRC
+SRC=./$SRC
+
+WARNS="$MMCD_WARNS $NEWF "
+# list all included headers with -H
+#DEBUG="$MMCD_DEBUG -H " # " -gdwarf-3 -O0 "
+#DEBUG="$MMCD_DEBUG  " # " -gdwarf-3 -O0 "
+DEBUG="$MMCD_DEBUG -MMD -MF toobib.deps  " # " -gdwarf-3 -O0 "
+OPT="$MMCD_OPT" # " -O3 "
+PROFILE="$MMCD_PROFILE" # " -O3 -gdwarf-3 -pg "
+FLAGS="$DEBUG"
+
+RUN_DATA="toobib.txt"
+compile()
+{
+mmcd_h_compile
+}
+run()
+{
+"./$DEST" -source "$RUN_DATA" -quit  
+}
+
+help()
+{
+echo Usage $0 
+cat "$0" | grep "^if " | grep "=="  | grep -v grep | sed -e 's/.*==//' | sed -e 's/"[^"]*$//' 
+}
+while [ "$*" != "" ]
+do
+start="$*"
+if [ "$1" == "-help" ]
+then
+help
+shift
+fi
+
+if [ "$1" == "-compile" ]
+then
+compile
+shift
+fi
+
+if [ "$1" == "-chromate" ]
+then
+echo g++  -Wall -std=gnu++11 -DTEST_MJM_CHROMATE -I. -I../../mjm/hlib -I../../mjm/num  -I../../pkg/include -Wno-unused-variable  -gdwarf-3 -O0  -x c++ mjm_chromate.h  -lpthread -lreadline -o chromate.out
+g++  -Wall -std=gnu++11 -DTEST_MJM_CHROMATE -I. -I../../mjm/hlib -I../../mjm/num  -I../../pkg/include -Wno-unused-variable  -gdwarf-3 -O0  -x c++ mjm_chromate.h  -lpthread -lreadline -o chromate.out
+
+shift
+fi
+
+
+if [ "$1" == "-install" ]
+then
+x=$devinstalldir
+if [ "$x" != "" ]
+then
+echo cp "$DEST" "$x/$DEST"
+cp "$x/$DEST" "$x/$DEST."`date +%Y-%m-%d-%s`
+cp "$DEST" "$x/$DEST"
+else
+echo no install dir $devinstalldir
+fi
+
+shift
+fi
+
+
+if [ "$1" == "-xml_lut" ]
+then
+cat xml_lut.txt | awk 'BEGIN{print "void xml_lut(int x, const char ** c){"}{ if ( $3!= "" ) print "if (x=="$3" ){ *c=\""$1"\"; return ; }"}END{print "}"}' > xml_lut.h
+shift
+fi
+
+if [ "$1" == "-opt" ]
+then
+FLAGS=$OPT
+shift
+fi
+
+if [ "$1" == "-test" ]
+then
+echo g++ -std=c++11  -MMD -MF testHTML.deps -I/usr/include/libxml2 -I../../mjm/hlib -x c++ testHTML.c -o testHTML -lxml2
+g++ -std=c++11  -O0  -MMD -MF testHTML.deps -gdwarf-3 -I/usr/include/libxml2 -I../../mjm/hlib -x c++ testHTML.c -o testHTML -lxml2
+shift
+fi
+
+bibfile="xxxx"
+if [ "$1" == "-clip" ]
+then
+shift
+cd junk
+echo clip "$bibfile"  | ../a.out
+fi
+if [ "$1" == "-clipdebug" ]
+then
+shift
+cd junk
+echo clip "$bibfile" 2 | ../a.out
+fi
+if [ "$1" == "-runf" ]
+then
+shift
+cd junk
+#for f in $* ; do echo $f; done
+cat "$1" | ../a.out
+shift
+#for f in $* ; do shift ; done
+# | ../a.out
+fi
+
+
+
+
+if [ "$1" == "-append" ]
+then
+cd junk
+echo add "$2" "$bibfile"  | ../a.out
+cd ..
+shift
+shift
+fi
+
+
+
+if [ "$1" == "-run" ]
+then
+shift
+#run  $*
+run 
+#shift
+fi
+
+if [ "$1" == "-use" ]
+then
+shift
+./toobib.out -cmd "find  " -cmd "out-bib - 6"  -quit 
+#2>xxx
+fi
+
+
+if [ "$1" == "-domains" ]
+then
+shift
+#//m_gdv.push_back(GuessDomain("",&Myt::NullGuess));
+#//HANDLER(NullGuess) { return 0; }
+cat `which med2bib` | grep regexname= | grep -v "^#" |  sed -e 's/["=]/ /g' | sed -e 's/.*regexname  *//'  | awk 'BEGIN{s1="m_gdv.push_back(GuessDomain(\"" }{i=1; j=2; while ( j <= NF ) { print s1$i"\",&Myt::"$j"));"; print "2 HANDLER("$j") {return 0; }";  i=i+2; j=j+2; }}' | awk '{ if ( $1== "2" ){$1="";  x=x"\n"$0; } else print $0; }END{print "}"; print x; print "#endif"; print ""  ;  }' 
+fi
+
+
+if [ "$*" == "$start" ]
+then
+echo FUCK a "$*" and SHIT "$start"
+help
+exit -1
+fi
+done
+
