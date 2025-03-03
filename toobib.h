@@ -928,6 +928,27 @@ sb.replay_sources(r,flags);
 MM_ERR(MMPR(r.size()))
 } // cmd_get_replays
 
+// using the replay ragged and the used bibmap,
+// get current bibtex and grep -i retract 
+// maybe check source domain 
+// check title and authors.
+// compare names and entry count 
+//x.guess(p1,p2.c_str(),flags); 
+void cmd_do_replays(Cip & cip , LocalVar & lv ) 
+{
+const StrTy cmd=cip.cmd();
+const StrTy drn=cip.p1; // destination ragged for replay summary 
+const StrTy s=cip.p2; // the "used' bibmap matching sragged 
+const StrTy srn=cip.wif(3); // replay fields and links 
+Ragged & r=m_ragged_map[rn];
+const IdxTy flags=myatoi(cip.wif(4));
+MM_ERR(MMPR3(__FUNCTION__,cmd,s)<<MMPR(rn))
+const auto & sb=m_bib_map[s];
+sb.replay_sources(r,flags);
+MM_ERR(MMPR(r.size()))
+} // cmd_do_replays
+
+
 
 
 void cmd_select(Cip & cip , LocalVar & lv ) 
@@ -944,7 +965,17 @@ const StrTy cmd=cip.cmd();
 //const StrTy fn=cip.p1;
 const IdxTy n=myatoi(cip.p1);
 m_bib_map[m_curr_bib_map].dump(std::cout,n);
+MM_ERR(" this dumped the current map "<<MMPR(m_curr_bib_map))
 } // cmd_parse
+void cmd_dump_map(Cip & cip , LocalVar & lv ) 
+{
+const StrTy cmd=cip.cmd();
+const StrTy fn=cip.p1;
+const IdxTy n=myatoi(cip.p2);
+m_bib_map[fn].dump(std::cout,n);
+MM_ERR(MMPR3(__FUNCTION__,fn,m_bib_map[fn].size()))
+} // cmd_parse
+
 
 void cmd_inter_fix(Cip & cip , LocalVar & lv ) 
 {
@@ -1122,7 +1153,9 @@ void cmd_source(Cip & cip , LocalVar & lv )
 void cmd_quit(Cip & cip , LocalVar & lv )
 { clean_up(); return;  }
 void cmd_quiet(Cip & cip , LocalVar & lv ) { _quiet(); return;  }
+void cmd_quiet_pawn(Cip & cip , LocalVar & lv ) { _no_pawn_temp(); return;  }
 void cmd_loud(Cip & cip , LocalVar & lv ) {_loud();  return;  }
+void _no_pawn_temp() { Handler::global_nv_temps(); } 
 void _loud() { mjm_global_flags::mm_err_enable=true; }
 void _quiet() { mjm_global_flags::mm_err_enable=!true; }
 
@@ -1224,6 +1257,7 @@ m_cmd_map[StrTy("gather-html")]=&Myt::cmd_gather_html;
 m_cmd_map[StrTy("read-blob")]=&Myt::cmd_read_blob;
 m_cmd_map[StrTy("write-blob")]=&Myt::cmd_write_blob;
 m_cmd_map[StrTy("map-dump")]=&Myt::cmd_map_dump;
+m_cmd_map[StrTy("dump-map")]=&Myt::cmd_dump_map;
 m_cmd_map[StrTy("check-comments")]=&Myt::cmd_check_comments;
 m_cmd_map[StrTy("bib-cmd")]=&Myt::cmd_bib_cmd;
 m_cmd_map[StrTy("inter-fix")]=&Myt::cmd_inter_fix;
@@ -1238,6 +1272,7 @@ m_cmd_map[StrTy("all")]=&Myt::cmd_flags;
 m_cmd_map[StrTy("source")]=&Myt::cmd_source;
 m_cmd_map[StrTy("quit")]=&Myt::cmd_quit;
 m_cmd_map[StrTy("quiet")]=&Myt::cmd_quiet;
+m_cmd_map[StrTy("quiet-pawn")]=&Myt::cmd_quiet_pawn;
 m_cmd_map[StrTy("loud")]=&Myt::cmd_loud;
 m_cmd_map[StrTy("save-temp")]=&Myt::cmd_save_temps;
 m_cmd_map[StrTy("cm")]=&Myt::cmd_cm;

@@ -182,6 +182,9 @@ mjm_pawnoff() { Init(); }
 ~mjm_pawnoff() { Cleanup(); }
 void clean() { Cleanup(); }
 void verify_temps(const bool x) {  m_verify_temps_gone=x;}
+static int& force_verify_temps() { static int x=0; return x; }
+static void global_nv_temps() { force_verify_temps()=1; }
+bool  global_temps() const { return force_verify_temps()==1; }
 void debug(const IdxTy n ) { m_debug=n; }  
 IdxTy  debug()const  { return  m_debug; }  
 IdxTy view(const StrTy & h)
@@ -571,13 +574,13 @@ void Cleanup()
 {
 // polairty is right but name is confusing doh used properly elsewhere
 const bool norem= (mjm_global_flags::mm_delete_temps );
-if (m_verify_temps_gone) {
+if (!global_temps()) if (m_verify_temps_gone) {
 MM_ERR(" pawnoff cleanup "<<MMPR2(norem,m_files.size())) } 
 if (!norem  ) return;
 
 MM_LOOP(ii,m_files)
 {
-if ( m_verify_temps_gone ) {  MM_ERR(" removing "<<MMPR((*ii))) } 
+if (!global_temps()) if ( m_verify_temps_gone ) {  MM_ERR(" removing "<<MMPR((*ii))) } 
 std::remove((*ii).c_str());
 
 } // files

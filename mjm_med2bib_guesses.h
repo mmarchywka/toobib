@@ -896,6 +896,8 @@ typedef guesses GuessPair;
 
 typedef std::vector<GuessPair> GuessPairs;
 
+// API
+
 public:
 mjm_med2bib_guesses() {Init(); }
 ~mjm_med2bib_guesses() {}

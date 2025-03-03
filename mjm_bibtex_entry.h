@@ -1293,17 +1293,31 @@ return 0;
 } // replay_sources
 template <class Tline> void add(Tline &l , const Tgt & p, const StrTy &nm) const 
 {
+if (!p[nm].length()) return; 
 l.push_back(nm);
-l.push_back(p[nm]);
+ l.push_back(p[nm]);
 } // add
 IdxTy  extract(Myt & d,  const StrTy &nm, const IdxTy flags) const 
 {
+const  pTgtV* dp =d.m_wov_map.find("name",nm);
+if (dp)
+{
+MM_ERR(" dup citation ignore "<<MMPR(nm))
+return 0; 
+}
 const  pTgtV* p =m_wov_map.find("name",nm);
 if (p==0) return 0;
 const auto &  pv=*p;
 //  m_wov_map[(*p)[0]
-MM_LOOP(ii,pv) {  d.add(m_wov_map[(*ii)]); }
+MM_LOOP(ii,pv) { 
+ d.add(m_wov_map[(*ii)]); 
+ const StrTy se=m_wov_map[(*ii)].name(); 
+if (se!=nm) 
+	{ MM_ERR("wov db corrupt names wrong,  extracting "<<MMPR2(nm,se)) } 
 //d.m_wov_map[nm]+=(*p); 
+
+}
+
 return 1;
 }// extract
 
