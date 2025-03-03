@@ -4,6 +4,7 @@
 #include "mjm_globals.h"
 #include "mjm_thread_util.h"
 #include "mjm_read_buffer.h"
+#include "mjm_str_2_num.h"
 
 #include <map> 
 #include <vector> 
@@ -37,7 +38,65 @@ typedef char Tdata;
 typedef std::ofstream MyOs;
 
 // typedef typename Tr::MyBlock  MyBlock;
+ class blob_itor  
+{
+
 public:
+blob_itor() {Initblob_itor(); } 
+~blob_itor() {Freeblob_itor(); } 
+blob_itor( const Myt & that, const IdxTy _i) { Init(that);i=_i; } 
+// this would have to create a temp blob and delete lol. 
+//blob_itor(const StrTy & s,  const IdxTy flags ) { Initblob_itor(s,flags); }
+const Tdata & operator*() const { return p->ptr()[i]; }
+//Tdata & operator*() const { return p->ptr()[i]; }
+blob_itor& operator++() { ++i; return *this; }
+operator bool() { return i<n; }  
+StrTy save( const IdxTy flags=0) const { return Saveblob_itor(flags); } 
+StrTy dump( const IdxTy flags=0) const { return Dumpblob_itor(flags); } 
+private:
+void Initblob_itor(const StrTy & s,  const IdxTy flags ) 
+{ Initblob_itor(); 
+//BaseParams kvp(s);
+
+}
+
+
+StrTy Dumpblob_itor( const IdxTy flags=0) const  
+{
+Ss ss;
+// ss<<MMPR4(); 
+return ss.str(); 
+} // Dump 
+
+
+void Freeblob_itor()
+{
+
+} // Freeblob_itor
+
+void Initblob_itor()
+{
+n=0;
+p=0;
+} // Initblob_itor
+void Init( const Myt & that) 
+{ 
+i=0;
+n=that.m_sz;
+p=&that;
+} 
+
+// blob_itorMEMBERS
+IdxTy i,n; 
+const Myt * p;
+}; // blob_itor
+
+
+
+// API
+public:
+typedef blob_itor iterator;
+
 mjm_blob() {Init(); }
 mjm_blob(const StrTy & s) {Init(); copy(s); }
 
@@ -45,9 +104,11 @@ mjm_blob(const StrTy & s) {Init(); copy(s); }
 //mjm_blob( Myt & that) {Init(); Adopt(that); }
 
 ~mjm_blob() {delete [] m_data; }
-
+iterator begin() const { return iterator(*this,0); } 
+iterator end() const { return iterator(*this,m_sz); } 
 Myt& operator=( Myt & that) { Adopt(&that);  return *this; } 
 Myt& operator=( const StrTy & s) { copy(s);  return *this; } 
+StrTy string() const { return StrTy(*this); } 
 // this keeps binary data... 
 // and differs from the privat operator wtf 
 // this is NOT const 
@@ -59,6 +120,25 @@ if (m_data!=0){ ss.write(m_data,m_sz); }
 
 return ss.str();
 }
+void from_hex_string(const char * p, const IdxTy len)
+{
+Size(len+2);
+const bool odd=(len&1);
+mjm_str_2_num<Tr> hx;
+hx.set_hex();
+IdxTy j=0;
+IdxTy k=0;
+if (odd) { m_data[j]=hx[p[k]]; ++j; ++k; }
+while (k<len)
+{
+ m_data[j]=hx[p[k]]<<4; 
+ ++k; 
+ m_data[j]+=hx[p[k]]; 
+++k;
+++j;
+} // k  
+m_sz=j;
+} // from_hex_string 
 private:
 mjm_blob(const  Myt & that) { }
 
@@ -89,6 +169,9 @@ return 0;
 IdxTy size( ) const { return m_sz; }  
 Tdata* ptr() { return m_data;}
 const Tdata* ptr() const { return m_data;}
+// originally did not have this...
+Tdata & operator[](const IdxTy i) { return m_data[i]; }
+const Tdata & operator[](const IdxTy i) const  { return m_data[i]; }
 typedef mjm_read_buffer<Tr> RdBuf;
 IdxTy load(const StrTy & fn)
 {
@@ -305,6 +388,7 @@ m_sz=n; // assure a string guard
 memcpy(m_data,p,n); 
 return 0; 
 }
+// MEMBERS
 Tdata * m_data;
 IdxTy m_sz,m_alloc;
 }; // mjm_blob

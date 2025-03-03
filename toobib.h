@@ -67,6 +67,32 @@ authorid={orcid.org/0000-0001-9237-455X},
 toobib is best run and compiles with scripts. A recent working 
 command line is as follows, assuming the headers are in the include paths,
 
+ ./run_toobib -compile
+g++ -std=gnu++11 -DTEST_toobib__ -gdwarf-3 -O0 -MMD -MF toobib.deps -MMD -MF toobib.deps -I. -I/home/documents/cpp/mjm/hlib/ -I/home/documents/cpp/mjm/num -I/home/documents/cpp/mjm/ -I/home/documents/cpp/mjm/tcl -I/home/documents/cpp/mjm/include -I/home/documents/cpp/pkg/include -I/home/documents/cpp/pkg -I /usr/include/libxml2 -Wall -Wno-unused-variable -Wno-unused-function -Wno-sign-compare -Wno-non-template-friend -Wno-misleading-indentation -Wno-unused-but-set-variable -x c++ ./toobib.h -o toobib.out -lreadline -lxml2 -lpthread
+/usr/bin/ld: /tmp/cc8MgZ0N.o: in function `mjm_pawnoff<toobib_traits::Tr>::fgen(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)':
+/home/documents/cpp/mjm/hlib/mjm_pawnoff.h:201: warning: the use of `tmpnam' is dangerous, better use `mkstemp'
+marchywka@happy:/home/documents/cpp/proj/toobib$ ./run_toobib -opt -compile
+g++ -std=gnu++11 -DTEST_toobib__ -O3 -MMD -MF toobib.deps -I. -I/home/documents/cpp/mjm/hlib/ -I/home/documents/cpp/mjm/num -I/home/documents/cpp/mjm/ -I/home/documents/cpp/mjm/tcl -I/home/documents/cpp/mjm/include -I/home/documents/cpp/pkg/include -I/home/documents/cpp/pkg -I /usr/include/libxml2 -Wall -Wno-unused-variable -Wno-unused-function -Wno-sign-compare -Wno-non-template-friend -Wno-misleading-indentation -Wno-unused-but-set-variable -x c++ ./toobib.h -o toobib.out -lreadline -lxml2 -lpthread
+In file included from ./mjm_chromate.h:24,
+                 from ./mjm_try_n_get.h:11,
+                 from ./mjm_med2bib_guesses.h:19,
+                 from ./toobib.h:87:
+/home/documents/cpp/mjm/hlib/mjm_wscat_bot.h: In member function ‘mjm_wscat_bot<Tr>::IdxTy mjm_wscat_bot<Tr>::Launch(const StrTy&, mjm_wscat_bot<Tr>::IdxTy) [with Tr = toobib_traits::Tr]’:
+/home/documents/cpp/mjm/hlib/mjm_wscat_bot.h:210:8: warning: ignoring return value of ‘__ssize_t getline(char**, size_t*, FILE*)’, declared with attribute warn_unused_result [-Wunused-result]
+  210 | getline(&line,&sz,fddin);
+      | ~~~~~~~^~~~~~~~~~~~~~~~~
+/usr/bin/ld: /tmp/cc4ZBeyU.o: in function `mjm_pawnoff<toobib_traits::Tr>::Fileio(mjm_blob<toobib_traits::Tr>&, mjm_blob<toobib_traits::Tr>&, mjm_blob<toobib_traits::Tr> const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, unsigned int)':
+toobib.h:(.text._ZN11mjm_pawnoffIN13toobib_traits2TrEE6FileioER8mjm_blobIS1_ES5_RKS4_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEj[_ZN11mjm_pawnoffIN13toobib_traits2TrEE6FileioER8mjm_blobIS1_ES5_RKS4_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEj]+0x1f3): warning: the use of `tmpnam' is dangerous, better use `mkstemp'
+marchywka@happy:/home/documents/cpp/proj/toobib$ 
+
+
+
+
+
+
+previously although maybe not changed,
+
+
 g++ -std=gnu++11 -DTEST_toobib__ -gdwarf-3 -O0 -MMD -MF toobib.deps -I. -I/home/documents/cpp/mjm/hlib/ -I/home/documents/cpp/mjm/num -I/home/documents/cpp/mjm/  -I/home/documents/cpp/mjm/include -I/home/documents/cpp/pkg/include -I/home/documents/cpp/pkg -I /usr/include/libxml2 -Wall -Wno-unused-variable -Wno-unused-function -Wno-sign-compare -Wno-non-template-friend -Wno-misleading-indentation -Wno-unused-but-set-variable -x c++ ./toobib.h -o toobib.out -lreadline -lxml2 -lpthread
  2158  ./toobib.out quiet  -about -quit
 
@@ -115,6 +141,7 @@ extern "C" {
 #include "mjm_bibtex_parse.h"
 #include "mjm_ext_things.h"
 #include "mjm_loo_parsing.h"
+#include "mjm_latex_aux_parse.h"
 
 #include <algorithm>
 #include <map>
@@ -290,7 +317,7 @@ typedef std::map<StrTy, MyXml> XmlMap;
 typedef  mjm_med2bib_guesses <Tr>  Guesser;
 
 typedef mjm_loo_parsing<Tr> Loo;
-
+typedef mjm_latex_aux_parse<Tr> AuxParse;
 
 public:
 // FIXME doh put this somwhere lol 
@@ -825,6 +852,84 @@ if (fn.length()==0) fn=m_curr_bib_map;
 else m_curr_bib_map=fn;
 m_bib_map[m_curr_bib_map].parse(fn);
 } // cmd_parse
+
+void cmd_load_bibs(Cip & cip , LocalVar & lv ) 
+{
+const StrTy cmd=cip.cmd();
+// the map to load
+StrTy fn=cip.p1;
+if (fn.length()==0) fn=m_curr_bib_map;
+else m_curr_bib_map=fn;
+IdxTy idx=2;
+while (cip.wif(idx).length())
+{
+MM_ERR(MMPR3(m_curr_bib_map,idx,cip.wif(idx)))
+m_bib_map[m_curr_bib_map].parse(cip.wif(idx));
+++idx;
+}
+
+MM_ERR(MMPR(m_bib_map[m_curr_bib_map].size()));
+} // cmd_load_bibs
+
+
+void cmd_aux(Cip & cip , LocalVar & lv ) 
+{
+const StrTy cmd=cip.cmd();
+const StrTy fn=cip.p1;
+const StrTy nx=cip.p2;
+const StrTy rn=cip.wif(3);
+Ragged & r=m_ragged_map[rn];
+const IdxTy flags=myatoi(cip.wif(4));
+MM_ERR(MMPR4(__FUNCTION__,cmd,fn,nx)<<MMPR(rn))
+AuxParse ap;
+ap.load(fn,flags);
+StrTy x=ap.dump();
+//MM_ERR(MMPR(x))
+ap.bibcites(r,flags);
+} // cmd_aux
+
+// extract bibs from s into d that are named in r
+void cmd_extract_bibs(Cip & cip , LocalVar & lv ) 
+{
+const StrTy cmd=cip.cmd();
+const StrTy d=cip.p1;
+const StrTy s=cip.p2;
+const StrTy rn=cip.wif(3);
+Ragged & r=m_ragged_map[rn];
+const IdxTy flags=myatoi(cip.wif(4));
+MM_ERR(MMPR4(__FUNCTION__,cmd,d,s)<<MMPR(rn))
+auto & db=m_bib_map[d];
+const auto & sb=m_bib_map[s];
+
+MM_LOOP(ii,r)
+{
+const auto & line=(*ii);
+if (line.size()==0) continue;
+IdxTy n=sb.extract(db,line[0],0);
+if (n==0) MM_ERR(" bibtex not found "<<MMPR(line[0]))
+
+} // ii 
+MM_ERR(MMPR(m_bib_map[d].size()))
+} // cmd_extract_bibs
+
+// go through the bibs in s and put replay links
+// into r in format name {field, value} ......
+void cmd_get_replays(Cip & cip , LocalVar & lv ) 
+{
+const StrTy cmd=cip.cmd();
+const StrTy rn=cip.p1;
+const StrTy s=cip.p2;
+//const StrTy rn=cip.wif(3);
+Ragged & r=m_ragged_map[rn];
+const IdxTy flags=myatoi(cip.wif(3));
+MM_ERR(MMPR3(__FUNCTION__,cmd,s)<<MMPR(rn))
+const auto & sb=m_bib_map[s];
+sb.replay_sources(r,flags);
+MM_ERR(MMPR(r.size()))
+} // cmd_get_replays
+
+
+
 void cmd_select(Cip & cip , LocalVar & lv ) 
 {
 const StrTy cmd=cip.cmd();
@@ -1108,6 +1213,11 @@ m_cmd_map[StrTy("find")]=&Myt::cmd_find;
 m_cmd_map[StrTy("out-bib")]=&Myt::cmd_out_bib;
 m_cmd_map[StrTy("bib")]=&Myt::cmd_bib;
 m_cmd_map[StrTy("parse")]=&Myt::cmd_parse;
+m_cmd_map[StrTy("aux")]=&Myt::cmd_aux;
+m_cmd_map[StrTy("extract-bibs")]=&Myt::cmd_extract_bibs;
+// cmd_get_replays
+m_cmd_map[StrTy("get-replays")]=&Myt::cmd_get_replays;
+m_cmd_map[StrTy("load-bibs")]=&Myt::cmd_load_bibs;
 m_cmd_map[StrTy("select")]=&Myt::cmd_select;
 m_cmd_map[StrTy("parse-html")]=&Myt::cmd_parse_html;
 m_cmd_map[StrTy("gather-html")]=&Myt::cmd_gather_html;
@@ -1721,12 +1831,20 @@ int main(int argc,char **args)
 typedef mjm_toobib Myt;
 ///typedef double D;
 //typedef unsigned int IdxTy;
+// "1" includes the invokation thing lol. 
+//MM_ERR(MMPR(argc))
+// this can never occur lol 
 if (strcmp(args[0],"-quiet")==0) { mjm_global_flags::mm_err_enable=!true; }
 if (strcmp(args[0],"quiet")==0) { mjm_global_flags::mm_err_enable=!true; }
-if (argc) { 
+if (argc>1) { 
 if (strcmp(args[1],"-quiet")==0) { mjm_global_flags::mm_err_enable=!true; }
 if (strcmp(args[1],"quiet")==0) { mjm_global_flags::mm_err_enable=!true; }
 }
+if (argc>2) { 
+if (strcmp(args[2],"-quiet")==0) { mjm_global_flags::mm_err_enable=!true; }
+if (strcmp(args[2],"quiet")==0) { mjm_global_flags::mm_err_enable=!true; }
+}
+
 
 Myt x(argc,args);
 if (!x.done()) x.command_mode();

@@ -7,6 +7,7 @@
 
 #include <../mjsonu/mjsonu.h>
 
+#include "mjm_ya_vector_valued_table.h"
 
 
 #include "mjm_pawnoff.h"
@@ -25,6 +26,14 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdint.h>
+
+
+
+/*
+// std14 for some auto return tyeps 
+// QUICKCOMPILE g++  -Wall -Wno-unused-variable  -Wno-misleading-indentation  -std=gnu++14 -DTEST_MJM_XREF_JSON -I. -I../../mjm/hlib -I../../mjm/num  -I/home/documents/cpp/pkg/include -I/home/documents/cpp/pkg -gdwarf-3 -O0  -x c++ mjm_xref_json.h -o mjm_xref_json.out  -lpthread -lreadline
+
+*/
 
 /*
 Add datacite look up,
@@ -371,9 +380,12 @@ typedef mjm_wovdb<Tr,StrTy> Tdb;
 
 
 typedef mjm_hier_two<Tr> HierUtil;
+typedef mjm_ya_vector_valued_table<Tr,StrTy,IdxTy> Index;
+typedef mjm_mjsonu JsonTy;
 
-
+// API
 public:
+typedef Index index_type;
 mjm_xref_json() {}
 ~mjm_xref_json() {}
 // Zenodo
@@ -419,6 +431,32 @@ MM_ERR(r.dump())
 return 0; 
 }
 
+IdxTy load_new_ragged(Ragged & r, const StrTy & fn, const IdxTy  flags) const
+{
+//MM_MSG(" using integrated json for xref may not work doh ")
+typedef mjm_mjsonu JsonTy;
+JsonTy json;
+std::ifstream is(fn);
+auto pr=json.new_dirty_parse<RagHandler>(is,0);
+//Ragged & rn=pr.res;
+ r=pr.res;
+MM_ERR(r.dump())
+return 0; 
+}
+
+IdxTy load_new_ragged(Ragged & r, std::istream  & is, const IdxTy  flags) const
+{
+//MM_MSG(" using integrated json for xref may not work doh ")
+typedef mjm_mjsonu JsonTy;
+JsonTy json;
+//std::ifstream is(fn);
+auto pr=json.new_dirty_parse<RagHandler>(is,0);
+//Ragged & rn=pr.res;
+ r=pr.res;
+MM_ERR(r.dump())
+return 0; 
+}
+
 
 
 IdxTy load_ragged(Ragged & r, const StrTy & fn, const IdxTy  flags) const
@@ -435,6 +473,63 @@ return 0;
 }
 
 
+IdxTy load_ragged(Ragged & r, std::istream & is , const IdxTy  flags) const
+{
+//MM_MSG(" using integrated json for xref may not work doh ")
+typedef mjm_mjsonu JsonTy;
+JsonTy json;
+//std::ifstream is(fn);
+auto pr=json.dirty_parse(is,0);
+//Ragged & rn=pr.res;
+ r=pr.res;
+MM_ERR(r.dump())
+return 0; 
+}
+
+// find lines with the given keys optionally index meta info
+// like length or values 
+void index(index_type & idx, const Ragged & r, const IdxTy flags)
+{
+const bool index_len=Bit(flags,0);
+const bool index_values=Bit(flags,2);
+MM_ERR(MMPR3(idx.size(),r.size(),flags)<<MMPR3(__FUNCTION__,index_len,index_values))
+IdxTy iline=0; 
+MM_LOOP(ii,r)
+{
+const Line & l=(*ii);
+IdxTy lenf=l.size();
+if (lenf<1) { ++iline; continue; }
+if (index_len) { Ss ss; ss<<"length="<<lenf; idx.add(ss.str(),iline); } 
+if (!index_values) --lenf;
+MM_ILOOP(i,lenf)
+{
+const StrTy & w=l[i];
+if (w!="{") if (w!="[") idx.add(w,iline);
+
+} // i 
+++iline;
+} // ii 
+
+
+} // index
+
+StrTy lookup(const StrTy & key, const index_type & idx, const Ragged & r, const IdxTy flags=0)
+{
+JsonTy json;
+json.index(idx,r,0);
+const auto v=idx[key];
+if (v.size()!=0)
+{
+MM_ERR(MMPR2(key,v[0]))
+const Line & l=r[v[0]];
+ return l[l.size()-1];
+
+}
+else
+MM_ERR(" no entry  found return "<<MMPR(key) )
+
+return StrTy();
+} // lookup 
 
 template <class Tm > IdxTy assemble(Tm & m, const Ragged & r,  const IdxTy  flags) const
 {
@@ -1128,6 +1223,17 @@ CommandInterpretterParam  cip(li);
 
 if (cmd=="quit") break;
 if (cmd=="dump") { MM_ERR(x.dump()) }
+//IdxTy load_ragged(Ragged & r, const StrTy & fn, const IdxTy  flags) const
+else if (cmd=="newdirty") {
+Ragged r; 
+IdxTy rc=x.load_new_ragged(r,cip.p1,atoi(cip.p2.c_str()));
+MM_ERR(MMPR(rc))
+}
+else if (cmd=="dirty") {
+Ragged r; 
+IdxTy rc=x.load_ragged(r,cip.p1,atoi(cip.p2.c_str()));
+MM_ERR(MMPR(rc))
+}
 else if (cmd=="load") {
 // x.load(li.words(),1); 
 Ragged r; 

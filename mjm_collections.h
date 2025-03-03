@@ -989,6 +989,10 @@ add_ci();
 ConmfigureReader( *m_lip );
 return m_lip;
 }
+// m_lip could be null...
+const IdxTy code_split_base() const { 
+return CommandInterpretter::CODE_SPLIT_BASE;
+ } 
 CommandInterpretter * set_split(const IdxTy split, const char c)
 {
 MM_ONCE(" not setting m_splitter wtf ",)

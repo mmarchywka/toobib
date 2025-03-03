@@ -293,7 +293,7 @@ Map m_exclude;
 template<class Tr>
 class mjm_bibtex_entry
 {
-
+typedef mjm_bibtex_entry<Tr> Myt;
 typedef typename Tr::IdxTy IdxTy;
 typedef typename Tr::D D;
 typedef typename Tr::Ss Ss;
@@ -325,7 +325,7 @@ typedef CommandInterpretter Ci;
 static bool Bit(const IdxTy f, const IdxTy b) { return ((1<<b)&f)!=0; }
 static bool Mask(const IdxTy f, const IdxTy m) { return ((m)&f)!=0; }
 
-
+// API
 public:
 typedef MapTy kvp_type;
 mjm_bibtex_entry() {Init(); } 
@@ -338,9 +338,9 @@ auto & jj=(*ii).second;
 if (jj.size()==0)  return StrTy();
 return jj[0];
 }
-
 // this was never changed to a dv, just a str to vec map doh 
 const MmapTy & map() const { return m_map; }
+MmapTy & map() { return m_map; }
 void clear() { Init(); } 
 void serial(const IdxTy & x) { m_serial=x;}
 IdxTy serial()const  {return  m_serial;}
@@ -1202,6 +1202,7 @@ Bp bib_parse;
 return bib_parse.parse(m_map,p,len,0);
 }
 
+// MEMBERS 
 StrTy m_type, m_name,m_lexi_added_date,m_source_file;
 MmapTy m_map;
 MmapTy m_errors,m_observations;
@@ -1247,7 +1248,7 @@ void Init() {}
 template <class Tr> 
 class mjm_bibtex_entry_map 
 {
-
+typedef mjm_bibtex_entry_map<Tr> Myt;
 typedef typename Tr::IdxTy IdxTy;
 typedef typename Tr::D D;
 typedef typename Tr::Ss Ss;
@@ -1272,6 +1273,39 @@ typedef typename WovBibDB::vector_type pTgtV;
 typedef CommandInterpretter Ci;
 public:
 mjm_bibtex_entry_map() { Init(); } 
+template <class Trag> IdxTy replay_sources(Trag & r, const IdxTy flags ) const
+{
+MM_LOOP(ii,m_wov_map)
+{
+const  Tgt & p =(*ii);
+typename Trag::Line l;
+l.push_back(p.name());
+add(l,p,"citeurl");
+add(l,p,"srcurl");
+add(l,p,"xsrcurl");
+add(l,p,"url");
+add(l,p,"doi");
+add(l,p,"urla");
+add(l,p,"urlb");
+r.add(l);
+} // ii 
+return 0;
+} // replay_sources
+template <class Tline> void add(Tline &l , const Tgt & p, const StrTy &nm) const 
+{
+l.push_back(nm);
+l.push_back(p[nm]);
+} // add
+IdxTy  extract(Myt & d,  const StrTy &nm, const IdxTy flags) const 
+{
+const  pTgtV* p =m_wov_map.find("name",nm);
+if (p==0) return 0;
+const auto &  pv=*p;
+//  m_wov_map[(*p)[0]
+MM_LOOP(ii,pv) {  d.add(m_wov_map[(*ii)]); }
+//d.m_wov_map[nm]+=(*p); 
+return 1;
+}// extract
 
 // these rely on have no values with zero length vectors.. 
 class iter
@@ -1647,7 +1681,7 @@ typedef mjm_bibtex_parse<Tr> Bp;
 Bp bib_parse;
 IdxTy pos=0;
 m_loaded_from=nm;
-//MM_ERR(" parsing "<<MMPR2(nm,len))
+MM_ERR(" parsing "<<MMPR2(nm,len))
 while (pos<len)
 {
 // TODO FIXME this needs to be a vector valued map like
@@ -2033,7 +2067,7 @@ m_wov_map.index(loc,"name",t.name());
  } 
 
 
-
+// MEMBERS
 //TgtM m_map;
 WovBibDB m_wov_map;
 IdxTy m_entries;

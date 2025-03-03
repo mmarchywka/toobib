@@ -250,6 +250,7 @@ Source(fn,die);
 }
 void set_prompt(const StrTy & s) { m_prompt=s; }
 void set_prompt(const char *  s) { m_prompt=StrTy(s); }
+IdxTy code_split_base() const { return CODE_SPLIT_BASE; } 
 void set_split(const IdxTy & s, const char sep)
 {
 m_splitter=s;

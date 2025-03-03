@@ -38,6 +38,26 @@ run()
 "./$DEST" -source "$RUN_DATA" -quit  
 }
 
+push_to_git()
+{
+l1=`find -name "*.zip" `
+newbackup -deps
+l2=`find -name "*.zip" `
+fn=`echo $l1 $l2 | sed -e 's/ /\n/g' | sort | uniq -c | awk '{ if ($1 =="1") print $2 }'`
+n=`echo $fn |wc  -w `
+if [ "$n" == "1" ]
+then
+mygit -push-zip "$fn" toobib 
+else
+echo not sure what to push n=$n and $fn
+fi
+
+} # push_to_git
+
+
+
+
+
 help()
 {
 echo Usage $0 
@@ -66,6 +86,14 @@ g++  -Wall -std=gnu++11 -DTEST_MJM_CHROMATE -I. -I../../mjm/hlib -I../../mjm/num
 shift
 fi
 
+if [ "$1" == "-push_to_git" ]
+then
+shift
+push_to_git
+shift
+fi
+
+
 
 if [ "$1" == "-install" ]
 then
@@ -78,7 +106,22 @@ cp "$DEST" "$x/$DEST"
 else
 echo no install dir $devinstalldir
 fi
+shift
+fi
 
+
+if [ "$1" == "-install-chromate" ]
+then
+CDEST=chromate.out
+x=$devinstalldir
+if [ "$x" != "" ]
+then
+echo cp "$CDEST" "$x/$CDEST"
+cp "$x/$CDEST" "$x/$CDEST."`date +%Y-%m-%d-%s`
+cp "$CDEST" "$x/$CDEST"
+else
+echo no install dir $devinstalldir
+fi
 shift
 fi
 

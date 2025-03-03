@@ -436,13 +436,225 @@ typedef rapidjson::SizeType  Jsize;
     private:
     MyHandler(const MyHandler& noCopyConstruction);
     MyHandler& operator=(const MyHandler& noAssignment);
-};
+}; // MyHandler end
+
 //////////////////////////////////////////////////////////////////////////
 
 
+// copied rapidjson simplepullreader
+struct RagHandler {
+
+	typedef unsigned int IdxTy; 
+	typedef std::stringstream Ss; 
+	typedef std::string StrTy; 
+typedef mjsonu_traits::Tr Tr; 
+typedef mjm_string_array_formatter<Tr> Formatter;
+
+// If you can require C++11, you could use std::to_string here
+template <typename T> std::string stringify(T x) {
+// TODO FIXME this needs more preceisions for floats to this is a mess. 
+    	std::stringstream ss;
+    ss << x;
+    return ss.str();
+}
+
+typedef mjm_ragged_table Ragged;
+typedef  typename Ragged::Line Line;
+
+    const char* type;
+    std::string data;
+StrTy m_key,m_filter;
+Ragged * m_table,*m_def_table;
+Ragged& t() { return *m_table; }
+Line m_line;
+bool m_no_stdout,m_dump_all;
+IdxTy m_out_mode,m_objs,m_arrays;
+IdxTy m_serial_things;
+IdxTy m_global; // 2022-01-07
+void set_table(Ragged * p ) { delete m_table; m_def_table=0;  m_table=p;}
+void no_stdout(const bool x ) { m_no_stdout=x;}
+
+void new_parse() { Init(); } 
+void Init()
+{
+
+type=0;
+m_table=NULL;
+m_no_stdout=false;
+m_out_mode=0;
+m_objs=0;
+m_arrays=0;
+m_serial_things=0;
+m_def_table=new Ragged();
+m_table=m_def_table;
+} // Init
+   //MyHandler(): m_filter(),m_dump_all(true)  {} 
+
+    RagHandler() : type(), data() ,m_filter(),m_dump_all(true),m_out_mode(0) ,
+m_global(0)  
+{
+Init(); //m_stack.push_back(object_state(StrTy("GLOBAL"),0)); 
+    }
+    RagHandler(const IdxTy ng) : type(), data() ,m_filter(),m_dump_all(true),m_out_mode(0) ,
+m_global(ng)  
+{
+Init(); //m_stack.push_back(object_state(StrTy("GLOBAL"),0)); 
+    }
+~RagHandler() { delete m_def_table; } 
+
+IdxTy global() const { return m_global; }
+
+void clean_output_mode(const bool x )
+{} //  {if (x) m_out_mode=1; else m_out_mode=0; }  
+void out_mode(const IdxTy m){} //  { m_out_mode=m;} 
+bool new_item() 
+{
+switch (m_out_mode)
+{
+case 1: return new_item_2();
+case 0:
+default : return new_item_1();
+} // switch
+
+return true;
+} // new_item
+void new_key()
+{
+// 
+m_line.push_back(m_key);
+
+} // new_key 
+// these are data items
+bool new_item_1()
+{
+if (m_objs<1) { MM_ERR(" no containing object will fail ") 
+MM_ERR(MMPR3(type,data,m_key)) } 
+Line x=m_line;
+x.push_back(data);
+t().push_back(x);
+m_line.pop_back(); // remove old key 
+return true;
+} // new_item_1
+bool new_item_2()
+{
+
+
+return true;
+} // new_item_2
+
+
+StrTy dump(const Line & l ) { Ss ss; MM_LOOP(ii,l) { ss<<" "<<(*ii); }
+return ss.str(); } 
+// Danger will robinson, added "end" line without testing
+// to disambiguate without adding numbers to delimiters. 
+
+bool end_ok(const StrTy & c, const IdxTy sz)
+{
+if (sz==0) return false;
+const char * p=m_line.back().c_str();
+const IdxTy len=m_line.size();
+if (len==0) return false;
+return p[len-1]==c.c_str()[0]; 
+} // end_ok 
+void pop_object()
+{
+const IdxTy sz=m_line.size();
+if (end_ok("{",sz))
+//if (sz) if (m_line.back()=="{") 
+{ 
+Line x=m_line;
+x.push_back("}");
+t().push_back(x);
+m_line.pop_back(); return; 
+}
+MM_ERR(" sonmething wrong with end object "<<MMPR(dump(m_line)))
+if (sz) m_line.pop_back();
+if (m_line.size()) m_line.pop_back(); /// remove key if there was one 
+--m_objs;
+}
+
+void pop_array()
+{
+const IdxTy sz=m_line.size();
+if (end_ok("[",sz))
+//if (sz) if (m_line.back()=="[") 
+{
+Line x=m_line;
+x.push_back("]");
+t().push_back(x);
+m_line.pop_back(); return; }
+MM_ERR(" sonmething wrong with end object "<<MMPR(dump(m_line)))
+if (sz) m_line.pop_back();
+if (m_line.size()) m_line.pop_back(); /// remove key if there was one 
+--m_arrays;
+}
+// 1 is object 2 is array 
+void NewThing(const char c)
+{
+Ss ss;
+ss<<m_serial_things<<c;
+m_line.push_back(ss.str());
+++m_serial_things; 
+}
+bool new_thing(const IdxTy n)
+{
+//if ( n==1) {     m_line.push_back("{"); ++m_objs; } 
+if ( n==1) {    NewThing('{');  ++m_objs; } 
+//if ( n==2) { m_line.push_back("["); ++m_arrays; } 
+if ( n==2) { NewThing('['); ++m_arrays; } 
+//++m_serial_things;
+//++m_global;
+//m_key="";
+return true;
+}
+//typedef rapidjson::Null Jnull;
+//typedef rapidjson::Boll Jbool;
+//typedef rapidjson::Int  Jint;
+//typedef rapidjson::Int64  Jint64;
+//typedef rapidjson::Uint  Juint;
+//typedef rapidjson::Uint64  Juint64;
+//typedef rapidjson::Double  Jdouble;
+typedef rapidjson::SizeType  Jsize;
+
+    bool Null() { type = "Null"; data.clear();  return new_item(); }
+    bool Bool(bool b) { type = "Bool:"; data = b? "true": "false"; return new_item(); }
+    bool Int(int i) { type = "Int:"; data = stringify(i); return new_item(); }
+    bool Uint(unsigned u) { type = "Uint:"; data = stringify(u); return new_item(); }
+    bool Int64(int64_t i) { type = "Int64:"; data = stringify(i); return new_item(); }
+    bool Uint64(uint64_t u) { type = "Uint64:"; data = stringify(u); return new_item(); }
+    	// arrrgrgh wtf??? precisions gones .... doh 
+    bool Double(double d) { type = "Double:"; data = stringify(d); return new_item(); }
+    bool RawNumber(const char* str, Jsize length, bool) { type = "Number:"; data = std::string(str, length); return new_item(); }
+    bool String(const char* str, SizeType length, bool) { type = "String:"; data = std::string(str, length); return new_item(); }
+    bool StartObject() { type = "StartObject"; data.clear(); 
+	return new_thing(1); } 
+ //	    m_stack.push_back(object_state(m_key,1)); 
+	    
+	   // return true; }
+    bool Key(const char* str, SizeType length, bool) {
+ type = "Key:"; data = std::string(str, length); 
+//MM_ERR(" key "<<MMPR(data))
+m_key=data; new_key(); return true; }
+    bool EndObject(SizeType memberCount) { type = "EndObject:"; data = stringify(memberCount); 
+	   pop_object(); 
+	    return true; }
+    bool StartArray() { type = "StartArray"; data.clear();
+	   
+	return new_thing(2); } 
+//	   m_stack.push_back(object_state(m_key,2)); 
+//	    return true; }
+    bool EndArray(SizeType elementCount) { type = "EndArray:"; data = stringify(elementCount); pop_array();  return true; }
+
+   void select(const StrTy & f) { m_filter=f; m_dump_all=(f==""); } 
+    private:
+    RagHandler(const MyHandler& noCopyConstruction);
+    RagHandler& operator=(const MyHandler& noAssignment);
+}; // RagHandler end
 
 
 
+
+/////////////////////////////////////////////////////////////////////////
 
 
 class mjm_mjsonu 
@@ -769,7 +981,91 @@ return pr;
 } // dirty_parse;
 
 //////////////////////////////////////////////////////////////////////
+template <class Th>
+parse_result new_dirty_parse(IsTy & is, const IdxTy flags)
+{
+parse_result pr;
+const bool clean_output_mode=true;
+const bool dump_here=!true;
+const bool reset_handler=true;
+const bool debug_out=!true;
+const bool do_nostd =true;
+const bool good=is.good();
+const bool eof=is.eof();
+const StrTy cmd1="";
+//MM_ERR(MMPR4(cip.cmd(),good,eof,use_stdin)<<MMPR4(select,flags,cmd1,cmd2))
+MM_ERR(MMPR4(__FUNCTION__,flags,clean_output_mode,dump_here)<<MMPR4(reset_handler, debug_out, do_nostd,good)<<MMPR(eof))
+//  json reader and  zero length file TODO FIXME?  
+if (eof||!good)
+{
+MM_ERR(" null input to json parser "<<MMPR2(eof,good))
+return pr; 
+}
+const bool abort=false;
+    Th handler;
+    handler.select(cmd1);
+	if (clean_output_mode) handler.clean_output_mode(true);
+if (do_nostd) handler.no_stdout(true);
+handler.set_table(&pr.res);
+    Reader reader;
+    //StringStream ss(json);
+    BasicIStreamWrapper<std::istream>  ss(is);
+    reader.IterativeParseInit();
+    while (!reader.IterativeParseComplete()) {
+{const bool good=is.good();
+const bool eof=is.eof();
+const bool bad=eof||!good;
+if (bad)
+{
+MM_ERR("  json dies before parse "<<MMPR2(eof,good))
+pr.count=handler.global();
+pr.res.remove_ci(); // 2023
+return pr;
+}
+ } // ParseComplete  
+// this logic is now wrong, 
+const bool mjm_plod=true;
+//bool ok= reader.IterativeParseNext<kParseDefaultFlags>(ss, handler)||mjm_plod;
+bool ok= reader.IterativeParseNext<kParseDefaultFlags>(ss, handler);
+if (mjm_plod&&!ok) { 
+if ( debug_out) { MM_ERR(" reseting ok "<<MMPR4(ok,is.good(),is.eof(),ss.Tell())<<MMPR(int(ss.Peek()))) }
+    ss.Take();  reader.IterativeParseInit(); ok=true; 
+// needs the  again... 
+if (reset_handler){
+ handler.new_parse();
+if( do_nostd) handler.no_stdout(true);
+handler.set_table(&pr.res);
 
+}
+// I thought this had to reset the stack in the hanlder 
+} 
+{const bool good=is.good();
+const bool eof=is.eof();
+const bool bad=eof||!good||!ok;
+if (bad)
+{
+const IdxTy n=ss.Tell();
+IdxTy nmax=(n>20)?20:n;
+char cc[nmax+2];
+for(IdxTy i=0; i<nmax; ++i) cc[i]=ss.Take();
+cc[nmax]=0;
+MM_ERR("  json dies before parse  "<<MMPR4(ok,eof,good,n)<<MMPR(cc))
+pr.count=handler.global();
+pr.res.remove_ci(); // 2023
+
+return pr;
+}
+ } 
+if ( dump_here) {     std::cout << handler.type << handler.data << std::endl; } 
+    } // IterativeParseComplete
+pr.count=handler.global();
+pr.res.remove_ci(); // 2023
+return pr;
+} // new_dirty_parse;
+
+
+
+////////////////////////////////////////////////////////////////////////
 parse_result better_parse(IsTy & is, const IdxTy firstn, const IdxTy flags)
 {
 parse_result pr;
@@ -946,7 +1242,96 @@ return;
 if ( dump_here) {     cout << handler.type << handler.data << std::endl; } 
     } // IterativeParseComplete
 }
+//////////////////////////////////////////////////////////
 
+void cmd_rag_json(Cip & cip , LocalVar & lv )
+{
+// better than typing but aaarrrfj
+using namespace rapidjson;
+using namespace std;
+
+const StrTy ragin=cip.p1;
+// this is both a flag and mask string? WTF
+//const StrTy select=cip.p2;
+const IdxTy flags=myatoi(cip.p2); // wif(3);
+const StrTy cmd1=cip.wif(3);
+const StrTy cmd2=cip.wif(4);
+const StrTy select=cmd2;
+const bool use_stdin=(ragin=="-")||(ragin.length()==0);
+const bool dump_here=false; 
+const bool clean_output_mode=Bit(flags,0);
+// this changes default behavior
+const bool reset_handler=!Bit(flags,1);
+std::ifstream rin(ragin.c_str());
+std::istream&  is=use_stdin?(std::cin):(rin);
+const bool good=is.good();
+const bool eof=is.eof();
+MM_ERR(MMPR4(cip.cmd(),good,eof,use_stdin)<<MMPR4(select,flags,cmd1,cmd2))
+Ragged _r;
+Ragged & r=(cmd1.length()==0)?_r:m_ragged_map[cmd1];
+// or zero length file 
+if (eof||!good)
+{
+MM_ERR(" null input to json parser "<<MMPR2(eof,good))
+return; 
+}
+const bool abort=false;
+    RagHandler handler;
+handler.set_table(&r);
+    //handler.select(select);
+    handler.select(cmd1);
+	if (clean_output_mode) handler.clean_output_mode(true);
+    Reader reader;
+    //StringStream ss(json);
+    BasicIStreamWrapper<std::istream>  ss(is);
+    reader.IterativeParseInit();
+    while (!reader.IterativeParseComplete()) {
+{const bool good=is.good();
+const bool eof=is.eof();
+const bool bad=eof||!good;
+if (bad)
+{
+MM_ERR("  json dies before parse "<<MMPR2(eof,good))
+MM_ERR(MMPR(r.dump()))
+return;
+}
+ } 
+// this logic is now wrong, 
+const bool mjm_plod=true;
+//bool ok= reader.IterativeParseNext<kParseDefaultFlags>(ss, handler)||mjm_plod;
+bool ok= reader.IterativeParseNext<kParseDefaultFlags>(ss, handler);
+if (mjm_plod&&!ok) { 
+MM_ERR(" reseting ok "<<MMPR4(ok,is.good(),is.eof(),ss.Tell())<<MMPR(int(ss.Peek())))
+    ss.Take();  reader.IterativeParseInit(); ok=true; 
+if (reset_handler) handler.new_parse();
+// I thought this had to reset the stack in the hanlder 
+} 
+{const bool good=is.good();
+const bool eof=is.eof();
+const bool bad=eof||!good||!ok;
+if (bad)
+{
+const IdxTy n=ss.Tell();
+IdxTy nmax=(n>20)?20:n;
+char cc[nmax+2];
+for(IdxTy i=0; i<nmax; ++i) cc[i]=ss.Take();
+cc[nmax]=0;
+MM_ERR("  json dies before parse  "<<MMPR4(ok,eof,good,n)<<MMPR(cc))
+MM_ERR(MMPR(r.dump()))
+
+return;
+}
+ } 
+if ( dump_here) {     cout << handler.type << handler.data << std::endl; } 
+    } // IterativeParseComplete
+MM_ERR(MMPR(r.dump()))
+} // rag_json
+
+
+
+
+
+//////////////////////////////////////////////////////////
 
 
 
@@ -1098,6 +1483,7 @@ m_cmd_map[StrTy("add-ragged")]=&Myt::cmd_add_ragged;
 
 m_cmd_map[StrTy("string-ragged")]=&Myt::cmd_read_ragged;
 m_cmd_map[StrTy("sax-json")]=&Myt::cmd_sax_json;
+m_cmd_map[StrTy("rag-json")]=&Myt::cmd_rag_json;
 //m_cmd_map[StrTy("write-svg-ragged")]=&Myt::cmd_write_svg_ragged;
 //m_cmd_map[StrTy("read-dig")]=&Myt::cmd_read_dig;
 //m_cmd_map[StrTy("read-fasta")]=&Myt::cmd_read_fasta;
@@ -1345,7 +1731,7 @@ else { MM_ERR(" m_dmel is null ") }
 
 }
 
-
+// MEMBERS
 
 bool m_done;
 
