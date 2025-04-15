@@ -88,7 +88,7 @@ fi
 
 if [ "$1" == "-push_to_git" ]
 then
-shift
+#shift
 push_to_git
 shift
 fi

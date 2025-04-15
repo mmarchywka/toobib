@@ -940,9 +940,9 @@ const StrTy cmd=cip.cmd();
 const StrTy drn=cip.p1; // destination ragged for replay summary 
 const StrTy s=cip.p2; // the "used' bibmap matching sragged 
 const StrTy srn=cip.wif(3); // replay fields and links 
-Ragged & r=m_ragged_map[rn];
+Ragged & r=m_ragged_map[drn];
 const IdxTy flags=myatoi(cip.wif(4));
-MM_ERR(MMPR3(__FUNCTION__,cmd,s)<<MMPR(rn))
+MM_ERR(MMPR3(__FUNCTION__,cmd,s)<<MMPR(drn))
 const auto & sb=m_bib_map[s];
 sb.replay_sources(r,flags);
 MM_ERR(MMPR(r.size()))

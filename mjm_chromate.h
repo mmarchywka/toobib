@@ -914,6 +914,8 @@ IdxTy SetUA(const StrTy ua, const IdxTy flags )
 {
 fetch_info fi;
 Ragged r=ExecBroCmd(fi,"ua",ua);
+// 2025-04-15
+Ragged r2=ExecBroCmd(fi,"uanet",ua);
 m_current_ua=ua;
 
 return 0; 
@@ -2163,6 +2165,7 @@ OneParam("navigate","Page.navigate","url",StrTy("#1"));
 TwoParam("attach","Target.attachToTarget","targetId",StrTy("#1"),"flatten",true,false);
 
 OneParam("ua","Emulation.setUserAgentOverride","userAgent",StrTy("#1"));
+OneParam("uanet","Network.setUserAgentOverride","userAgent",StrTy("#1"));
 
 OneParam("navigator_override","Emulation.setNavigatorOverrides","platform",StrTy("__proto__"));
 OneParam("delete_window","Runtime.evaluate","expression",StrTy("delete window.navigator.webdriver"));
