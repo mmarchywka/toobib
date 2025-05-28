@@ -608,7 +608,7 @@ IdxTy &  pc=ps.pc;
 int&  braces=ps.braces;
 IdxTy &  state=ps.state;
 RdBuf& rdb= * ps.prd;
-
+MM_ERR(" 2025 parsing name ")
 // 2022-07-24 compiler complais unused... 
 // 2023-01-12 unused remove dummy thing for now 
 //MM_ERR(MMPR3(skipped,braces,(long int)(&rdb)))
@@ -625,10 +625,12 @@ if (Inc(pc,len))
 { 
 CharCoS(m,"need right brace(s) to end entry  ",c,p,pc,len,state,braces) ; return pc;  } 
 c=p[pc]; 
-if ((! CharOk(c,BIBNAME|m_name_mask,clut)) 
+// DBLP:conf/pics/Leubner99,
+if ((! CharOk(c,BIBNAME|m_name_mask,clut)&&(c!=':')&&(c!='/')) 
 // latex seems ok with non-ascii citations names 
  && (CharOk(c,NONEXCEPTIONAL,clut)) )
 {
+MM_ERR(" made name more liberal 2025")
 rdb.start_new();
 // the fist string is not marked, this is the first marked one. 
 m.kv(name_name,rdb.string_sane(1),5);
@@ -866,7 +868,7 @@ if (len==0 ) return 0;
 const Iv bvsmask=BIBVALS| m_val_mask;
 const Iv bvmask=BIBVAL| m_val_mask;
 const Iv keymask=BIBKEY|m_key_mask; // 2021
-
+MM_ERR(" 2025 ")
 // a reusable assembly area hopefully 1k is normally enough...
 RdBuf& rdb=m_rdb; //  rdb(10);
 rdb.clear();
@@ -885,6 +887,7 @@ ps.prd=&rdb;
 
 
 
+MM_ERR(" 2025 ")
 
 IdxTy phrc= ParseHunt( m,  ps, p, len,  clut,  flags);
 // need to make sure it found the start though...
@@ -892,9 +895,11 @@ if (Mask(state,HUNT)) return pc;
 rdb.start_new();
 IdxTy phtype= ParseType( m,  ps, p, len,  clut,  flags);
 if (!Mask(state,INNAME)) return pc;
+MM_ERR(" 2025 ")
 
 IdxTy phname= ParseName( m,  ps, p, len,  clut,  flags);
 if (Mask(state,INNAME)) return pc;
+MM_ERR(" 2025 ")
 // 2022-07-24 compile complains unused
 //char c=p[pc]; 
 IdxTy kvc=2; // added back in the comments in fromt 
@@ -936,7 +941,7 @@ return pc;
 template <class Tm> 
 IdxTy Parse(Tm & m, const char * p, const IdxTy len, ParseTable & clut, const IdxTy flags)
 {
-//MM_ERR(" new parse ")
+MM_ERR(" new parse "<<MMPR(len))
 if (len==0 ) return 0; 
 if (true) return ParseClean(m,p,len,clut,flags); 
 #if 0 

@@ -1590,7 +1590,7 @@ void Parse( const StrTy nm)
 Blob x;
 x.load(nm);
 IdxTy len=x.size();
-//MM_MSG(MMPR2(nm,len));
+MM_ERR(MMPR2(nm,len));
 Parse_db(nm,x.ptr(),len);
 }
 // TODO  now to make this vector valued 
@@ -1742,7 +1742,7 @@ t.set_order_vector(v);
 t.source(nm);
 //IdxTy dx=t.parse(m,x.ptr()+pos,len-pos,0);
 //os<<MMPR3(pos,dx,len);
-//MM_LOOP(ii,m) { os<<MMPR2((*ii).first, (*ii).second)<<CRLF; }
+//MM_LOOP(ii,m) { MM_ERR(MMPR2((*ii).first, (*ii).second)) }
 add(t);
 }
 return pos;

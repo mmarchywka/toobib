@@ -512,6 +512,7 @@ return m;
 IdxTy GoodEnough(Blob & b, const StrTy & fnbib, const InpTy & in, 
 const StrTy & url, const StrTy & nm, const IdxTy flags)
 {  
+MM_ERR("2025 "<<MMPR4(b.size(),fnbib,url,nm))
 const bool clean=!Bit(flags,0);
 const bool insert_url=!Bit(flags,1);
 // TODO FIXME this is trashing the input stuff now wtf... 

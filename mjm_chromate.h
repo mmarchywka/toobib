@@ -65,6 +65,14 @@ class FetchInfo {
 public:
 FetchInfo(): rc(~0),eline(0),right_one(false),actual_doc(false) {}
 FetchInfo & line(const int x) {eline=x; return *this; } 
+StrTy dump() const
+{
+Ss ss;
+ss<<MMPR4(rc,eline,error,root_node_id);
+ss<<MMPR3(back_end_node,right_one,actual_doc);
+ss<<MMPR(doc);
+return ss.str();
+} // dump
 void reset_error() {error=""; }
 IdxTy rc,eline;
 StrTy error,doc;
@@ -255,11 +263,21 @@ fetch_info print_page(const StrTy & fn, const StrTy & url, const IdxTy flags)
 { return PrintPage(fn,url,flags); } 
 // put into zzzz
 fetch_info fetch(const StrTy & url, const IdxTy flags) 
-{ return Fetch(url,flags);}
+{ 
+if (m_threw) { MM_ERR(" already threew ") return FetchInfo(); } 
+try{ 
+return Fetch(url,flags);
+} catch (FetchInfo fi) {m_threw=true;  MM_ERR(" fetch threw "<<MMPR(fi.dump())) return fi; } 
+
+}
 
 fetch_info save(const StrTy & fn, const StrTy & url, const IdxTy flags)
 {
-fetch_info fi=fetch(url,flags);
+if (m_threw) { MM_ERR(" already threew ") return FetchInfo(); } 
+fetch_info fi;
+try{ 
+ fi=fetch(url,flags);
+} catch (FetchInfo fi) {m_threw=true;  MM_ERR(" fetch threw "<<MMPR(fi.dump())) return fi; } 
 MM_ERR("saving "<<MMPR3(fn,fi.doc.length(),url))
 std::ofstream save(fn);
 save<<fi.doc;
@@ -916,6 +934,7 @@ fetch_info fi;
 Ragged r=ExecBroCmd(fi,"ua",ua);
 // 2025-04-15
 Ragged r2=ExecBroCmd(fi,"uanet",ua);
+Ragged r3=ExecBroCmd(fi,"uaweb",ua);
 m_current_ua=ua;
 
 return 0; 
@@ -1078,7 +1097,8 @@ MM_ERR(" endabe debugger")
 ExecBroCmd(fi,"enable_debugger",flags); // needs to be a const not flags 
 }
 
-
+// 2025-04-19 does nothing still getting HeaclessChrome UA 
+SetUA(m_ua,0);
 // navigate likely just causing a bad request 
 // wrong cross origin fck up doh 
 // this worked in one test case that was slently failing. 
@@ -1810,6 +1830,16 @@ m_options="--headless=new --window-size=1920,1080 --enable-logging=stderr --v=1 
 //m_options="--headless --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --crash-dump-dir=/tmp ";
 
 }
+// dup code warning, see also =new 
+// this does nothing either  although the real ua seems to crach invokation 
+const bool add_cmd_ua=!true;
+if (add_cmd_ua)
+{
+//m_options+=" --user-agent=\""+m_ua+"\" "; 
+m_options+=" --user-agent=foobar " ; 
+//if ( !m_chrome_with_head) m_options+=" --headless=new"; 
+
+}
 
 
 
@@ -1874,7 +1904,16 @@ m_options="--headless --window-size=1920,1080 --enable-logging=stderr --v=1  --d
 
 // consider crap like this see if it will fake it out, 
 // Input.dispatchMouseEvent #
+// https://www.zenrows.com/blog/undetected-chromedriver-user-agent#rotate-user-agent
+// this does nothing... these options get re-inited later doh 
+// but it still does nothing on cmdline.  
+const bool add_cmd_ua=!true;
+if (add_cmd_ua)
+{
+m_options+=" --user-agent=\""+m_ua+"\" "; 
+if ( !m_chrome_with_head) m_options+=" --headless=new "; 
 
+}
 
 
 m_port_option="--remote-debugging-port=";
@@ -2166,6 +2205,8 @@ TwoParam("attach","Target.attachToTarget","targetId",StrTy("#1"),"flatten",true,
 
 OneParam("ua","Emulation.setUserAgentOverride","userAgent",StrTy("#1"));
 OneParam("uanet","Network.setUserAgentOverride","userAgent",StrTy("#1"));
+// webViewInternal.overrideUserAgent - from strings on chrome executable lol 
+OneParam("uaweb","webViewInternal.overrideUserAgent","userAgent",StrTy("#1"));
 
 OneParam("navigator_override","Emulation.setNavigatorOverrides","platform",StrTy("__proto__"));
 OneParam("delete_window","Runtime.evaluate","expression",StrTy("delete window.navigator.webdriver"));
@@ -2183,6 +2224,7 @@ OneParam("get_response","Network.getResponseBody","requestId",StrTy("#1"));
 } // InitChromeCmds
 
 // MEMBERS
+volatile bool m_threw;
 ChromeCmdMap m_chrome_cmds;
 IdxTy m_mode;
 Hand m_hand;

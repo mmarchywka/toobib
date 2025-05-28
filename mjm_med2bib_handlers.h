@@ -1934,12 +1934,23 @@ MM_ERR(MMPR3(nm,(*ii),sr.m_v.size()))
 
 std::vector<StrTy> fnb;
 MM_ERR(MMPR(sr.m_v.size()))
+// 2025 this iterates over contents but it nees the file name for 
+// adding to output doh 
 MM_LOOP(ii,sr.m_v)
+// but this does not point to righr file need temps... 
+//MM_LOOP(ii,fns)  
 {
+StrTy fn=out.fn("temp",1);
+MM_ERR(MMPR(fn))
 Blob b;
-b.load(*ii);
+b=(*ii).c_str();
+b.save(fn);
+//b.load(*ii);
+b.load(fn);
+MM_ERR(MMPR2(b.size(),fn))
 const StrTy & url=uin;
-IdxTy rcf= out.good_enough(b,(*ii),in,url,nm,0);
+//IdxTy rcf= out.good_enough(b,(*ii),in,url,nm,0);
+IdxTy rcf= out.good_enough(b,fn,in,url,nm,0);
 const IdxTy nnow=out.found();
 MM_ERR(MMPR3(nstart,nnow,(*ii)))
 if (!all) if (nnow!=nstart) break;

@@ -638,6 +638,37 @@ return 0;
 
 } // guessbonndoc
 
+// 2025-05-27 https://dblp.org/rec/conf/pics/Leubner99.html?view=bibtex
+//https://www.imaging.org/common/uploaded%20files/pdfs/Papers/1999/PICS-0-42/977.pdf
+
+
+ static  IdxTy guessdblporg(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
+{
+const StrTy nm="guessdblporg";
+out.enter(nm);
+const StrTy & uin=in.uin();
+StrTy url="";
+const StrTy fn=out.fn(); //
+const StrTy fntemp=out.fn("temp"); //
+const StrTy fnbib=out.fn("bibtex"); //
+const IdxTy nstart=out.found();
+const StrTy nurl=MutateOnly(uin, "sed -e \'s/html.*/html?view=bibtex/\'" ,out );
+MM_ERR(MMPR3(nm,uin,nurl))
+if (( nurl.length()!=0))
+{
+InpTy in2(in,nurl);
+OutTy out2(out,nurl);
+IdxTy rc=handlehasbib(in2,out2,xflags); // in.mom()->Guess(in2,out2,in.rflags());
+MM_ERR(" return from recurions adopting now ... "<<MMPR(nurl))
+//MM_MSG(MMPR(out2.found()))
+out.adopt(out2);
+}
+// otherwise isbib should still work later... but check for others 
+out.exit(nm);
+return 0;
+
+} // guessdblporg
+
 
 
 // https://iris.univpm.it/retrieve/handle/11566/263460/77778/Tesi_Cirilli.pdf

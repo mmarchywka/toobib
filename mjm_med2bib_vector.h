@@ -182,7 +182,9 @@ AddPair("guesscaltech",&Myt::guesscaltech,"/authors\\.library\\.caltech");
 // 2023-02-25
 AddPair("guessdticmil",&Myt::guessdticmil,"\\.dtic\\.mil/"); 
 
-
+// 2025-05-27 https://dblp.org/rec/conf/pics/Leubner99.html?view=bibtex
+//https://www.imaging.org/common/uploaded%20files/pdfs/Papers/1999/PICS-0-42/977.pdf
+AddPair("guessdblporg",&Myt::guessdblporg,"[./]dblp\\.org/"); 
 
 // https://api.crossref.org/works/10.3987/com-06-s(o)36/transform/application/x-bibtex
 AddPair("handledoilink10",&Myt::handledoilink,"10\\.[0-9][0-9]"); 

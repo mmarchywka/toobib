@@ -189,6 +189,7 @@ bool quote=false;
 while (c)
 {
 const Word &  w=(*c);
+MM_ERR(MMPR4(esc,quote,braces,w))
 if ( w=="\\") esc=!esc;
 else if (w=="\"") quote=!quote;
 else
@@ -202,9 +203,9 @@ if (braces==1) { ss<<w<<CRLF; break; } // ==1
 
  --braces;
 }
-esc=false;
 } // eq
 
+esc=false;
 } // else
 ss<<w; // 
 prior=w;
