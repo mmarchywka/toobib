@@ -540,6 +540,13 @@ IdxTy nonx=be.non_x(reject_map());
 const bool good_start=(nonx>2); // (name.length()&&type.length());
 MM_ERR(" GoodEnough "<<MMPR4(good_start,nentries,nnames,IdxTy(frc))
 <<MMPR(nonx)<<MMPR4(name,type,be.size(),be.has_good_type())<<MMPR(be.key_str()))
+// 2025-06 reject now? wth were these kept?
+if (!good_start||(name.length()==0)||(type.length()==0)||(nentries<1))
+{
+MM_ERR(" 2005-06 fix rejecting obviously bad guess ")
+return ~0;
+} // reject
+
 if (!good_start)
 {
 //MM_ERR("GoodEnough NO  "<<MMPR3(fnbib,nentries,nnames)<<MMPR4(good_start,IdxTy(frc),name,type))
