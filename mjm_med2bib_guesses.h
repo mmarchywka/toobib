@@ -372,6 +372,7 @@ return IdCount(type+":::"+id,bump); }
 IdxTy id_count(const StrTy & id, const IdxTy bump=1) { return IdCount(id,bump); } 
 void result(const Blob & b, const StrTy & fn, const StrTy & name,const StrTy & url,const StrTy & nm, const IdxTy flags)
 { Result(b,fn,name,url,nm,flags); } 
+
 IdxTy found() const { return m_att.size(); } 
 void punt() {m_flags|=(1<<DEFER);  } 
 bool defer() const  { return Bit(m_flags,DEFER); }  
@@ -860,6 +861,8 @@ m_seen=that.m_seen; // this should have picked up initial counts on entry.
 // MEMBERS
 StrTy m_uin;
 WovDB m_db;
+// these are _attempt entries with hopefully all deails
+
 AttWovDB m_att;
 Hand m_hand;
 IdxTy m_flags;

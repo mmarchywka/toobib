@@ -370,7 +370,6 @@ void comment( const StrTy & key, const StrTy & v) { m_comments[key]=v; }
 void comment(  const StrTy & v) 
 //{Ss ss; ss<<m_comments.size();  m_comments[ss.str()]=v; } 
 {Ss ss;   m_comments[ss.str()]=v; } 
-
 void comment(const Vt *  x, WovDB &m) 
 {if (x)if((*x).size())  m_comments[""]=m[(*x)[0]];}
 
@@ -380,10 +379,29 @@ if (m_comments.size()==0) return StrTy();
 return (*(m_comments.begin())).second;
 
 }
+V grep_keys(const V & words, const IdxTy flags=0)
+{
+V v;
+MM_LOOP(ii,m_map)
+{
+const StrTy & s=(*ii).first;
+const bool x= StrUtil::fast_grep(s,words);
+if (x) v.push_back(s);
+} // ii 
+
+return v;
+} // grep_keys
+
+
 void set_order_vector(const V & order_vector) { m_order_vector=order_vector; } 
 void push_order_vector(const StrTy & k) { m_order_vector.push_back(k); } 
 //void set( const StrTy & key, const StrTy & v) { m_map[key]=v; } 
 void set( const StrTy & key, const StrTy & v) { m_map[key].push_back(v); } 
+void setclear( const StrTy & key, const StrTy & v) 
+{ 
+m_map[key].clear(); 
+m_map[key].push_back(v); 
+} 
 void seto( const StrTy & key, const StrTy & v) {
 //if (missing(key)) push_order_vector(key);set(key,v); } 
 push_order_vector(key);set(key,v); } 
@@ -585,7 +603,7 @@ IdxTy i=0;
 bool mods=false;
 IdxTy d=0;
 IdxTy ed=0;
-char cc[kold.length()+1];
+char cc[10*kold.length()+10000];
 char ecc[3*kold.length()+3];
 while (p[i]!=0)
 {

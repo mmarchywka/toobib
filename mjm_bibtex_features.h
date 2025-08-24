@@ -153,7 +153,8 @@ const ChCast c= ( unsigned char)  ( p[i]) ;
 //MM_ERR(MMPR3(i,Ch(c),int(state)))
 switch (state)
 {
-case  BAD : { if (c=='1'){start=i;  state=1;}  break; }  
+// fucking compiler fuck 
+case  IdxTy(BAD) : { if (c=='1'){start=i;  state=1;}  break; }  
 // allow leading junk 
 case 1 :{ if (c=='0'){ state=2; break;} if (c=='1'){ start=i;  state=1;}  break;  }  
 case 2 :{ if (c=='.'){ state=3; break;} if (c=='1'){start=i; state=1;break;  }state=BAD;  break;  }  

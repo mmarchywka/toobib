@@ -73,12 +73,24 @@ typedef Rx::Rx Regex;
 public:
 mjm_string_kvp() {}
 ~mjm_string_kvp() {}
+StrTy encoded(const Map & m, const IdxTy flags=0)
+{ Ss ss;
+MM_LOOP(ii,m)
+{
+if (ss.str().length()) ss<<";"; 
+ss<<(*ii).first<<"="<<(*ii).second;
+} // ii 
+return ss.str();
+} // encode
 template < class Ty> IdxTy encode(StrTy & s, const StrTy & k, const Ty & v, const IdxTy flags=0)
 { return Encode(s,k,v,flags); } 
 IdxTy parse(Map & m, const StrTy & s, const IdxTy flags=0)
 { return Parse(m,s,flags); } 
 IdxTy parse(Vector & v,Map & m, const StrTy & s, const IdxTy flags=0)
 { return Parse(v,m,s,flags); } 
+
+//StrTy make_string(Vector & v,Map & m, const StrTy & s, const IdxTy flags=0)
+//{ return Parse(v,m,s,flags); } 
 
 
 
@@ -321,6 +333,19 @@ void debug() {m_flags|=1; }
 bool plain() const { StrTy x; get(x,m_s); return x==m_s; }
 const Pair & kvp(const IdxTy i ) const { return m_vector[i]; } 
 bool has(const StrTy  & n ) const  { return m_map.find(n)!=m_map.end(); } 
+StrTy encoded(const IdxTy flags=0) const
+{
+ StrKvp kvp;
+return kvp.encoded(m_map);
+} // encoded
+// TODO ignores vector, just allw it to sort but may want groups
+// etc. 
+// precision etc 
+void set(const StrTy & nm, const D & x, const IdxTy flags=0 ) { Ss ss; ss<<x;  m_map[nm]=ss.str(); } 
+// want base conversion et 
+void set(const StrTy & nm, const int & x, const IdxTy flags=0 ) { Ss ss; ss<<x;  m_map[nm]=ss.str(); } 
+// allow for escape and safety etc 
+void set(const StrTy & nm, const StrTy & x, const IdxTy flags=0) {  m_map[nm]=x; } 
 const IdxTy  get(IdxTy  & d,const StrTy & n ) const { 
 IdxTy rc=1;
 const auto  ii=(m_map.find(n)); 
@@ -420,6 +445,25 @@ else d=(*ii).second;
 if ((m_flags&1)!=0) {MM_ERR(MMPR3(rc,d,n)) } 
 return rc;
 }
+const IdxTy  get_mod(IdxTy & _d,const StrTy & n, const IdxTy flags=0, const IdxTy min=0, const IdxTy max=0 ) const { 
+IdxTy rc=1;
+const auto ii=(m_map.find(n)); 
+if (ii==m_map.end()) { rc=0; } //  return 0;
+else{ 
+const char * p= ((*ii).second.c_str());
+int  d=myatoi(p);
+if (p[0]=='+') _d+=d;
+else if (p[0]=='-') _d+=d; // d should be negative lol
+else _d=d;
+
+}
+
+if ((m_flags&1)!=0) {MM_ERR(MMPR4(rc,_d,n,(*ii).second)) } 
+return rc;
+}
+
+
+
 template <class Tv> 
 const IdxTy  get_vec(Tv & d,const IdxTy sz, const StrTy & n ) const { 
 IdxTy rc=0;
@@ -579,7 +623,13 @@ else {p[i]=0; int n=myatoi(p+start); r=true; prior=n; start=i+1; }
 return r;
 } //EvaluateRange 
 
+// this needs to go with the parser but tack in here for now... 
+//StrTy MakeString() const
+//{
+//StrKvp kvp;
+//return kvp.make_string(m_vector,m_map,m_s);
 
+//} // MakeString
 
 void Init()
 {

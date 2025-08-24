@@ -2757,12 +2757,14 @@ out.exit(nm);
 {
 const bool li=Bit(xflags,0);
 const StrTy nm=StrTy("handleldjson2");
+out.enter(nm); 
 const bool all=in.collect_all();
 const IdxTy nstart=out.found();
 IdxTy rx=handleldjson2var(in,out,(li?0:1),xflags);
 // only do this with "all" not just as a second attempt with good bib 
 if (all ) handleldjson2var(in,out,0,xflags);
 MM_ERR(MMPR4(nm,all,nstart,out.found()))
+out.exit(nm); 
 return 0;
 }
  static  IdxTy handleldjson2var(const InpTy & in , OutTy & out ,const IdxTy opt,  const IdxTy xflags=0)  
@@ -3567,18 +3569,18 @@ MM_ERR("should have saved to "<<MMPR2(fnbibnew,type))
 return rc; 
 
 } // sep_add_json
+// fucking compiler cheks thi crap for extended fucking chrs now fuck 
 #if 0
 @missing{default,
 X_context = {http://schema.org},
 X_graph_address_addressLocality = {Greater Melbourne Area},
 X_graph_address_type = {PostalAddress},
-X_graph_alumniOf_name = {Box Hill Institute , Fortress Learning , University of Southern Mississippi , Universidade do Porto , Instituto de CiÃªncias BiomÃ©dicas Abel Salazar},
 X_graph_alumniOf_type = {EducationalOrganization , EducationalOrganization , EducationalOrganization , EducationalOrganization , EducationalOrganization},
 X_graph_alumniOf_url = {https://www.linkedin.com/school/box-hill-institute/ , https://www.linkedin.com/school/university-of-southern-mississippi/ , https://www.linkedin.com/school/universidadedoporto/},
 X_graph_image_contentUrl = {https://media-exp3.licdn.com/dms/image/C5103AQGKOL38Bki0rA/profile-displayphoto-shrink_200_200/0/1518952072007?e=1628121600&v=beta&t=Z6MfIfR0Zn_H9ZX1SCCQbCCwbftan_MD2Mt2bAwOw2k},
 X_graph_image_type = {ImageObject},
-X_graph_name = {JosÃ© Gomes},
-X_graph_reviewedBy_name = {JosÃ© Gomes},
+X_graph_name = {fucking compiler },
+X_graph_reviewedBy_name = {fucking compiler fuck },
 X_graph_reviewedBy_type = {Person},
 X_graph_sameAs = {https://au.linkedin.com/in/josegomestmp},
 X_graph_type = {Person , WebPage},

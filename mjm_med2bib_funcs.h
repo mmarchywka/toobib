@@ -4591,12 +4591,65 @@ const bool all=in.collect_all();
 // setting bit 0 will force it to use the scriupt "me -bro" 
 // otherwise do internally and there wa s a bug in quote.. 
 // but it still needs "dump dom" or it resturns pdf of the screen
-Grc grc=in.getter().meget(fn,uin,1);
+// 2025-08 assfuck 
+//Grc grc=in.getter().meget(fn,uin,1);
+Grc grc=in.getter().normalget(fn,uin,0);
+
+
 //MM_ERR(MMPR4(fntemp,fntemp3,fntemp2,fnbib))
 
-const IdxTy ldjrc=handleldjson2(in,out,1);
+//const IdxTy ldjrc=handleldjson2(in,out,1);
+const IdxTy ldjrc=handleldjson2(in,out,0);
 // missing json means blog post probably 
+const IdxTy ndone=out.found();
+// need to manually fix this crap now 2025-08
+MM_ERR(MMPR4(nstart,ndone,fnbib,__FUNCTION__))
+// another day of math physica ad medicien turned into a fucking
+// ASSFUCK fixing fucked up shit website scraping shit tof no fucking
+// ASSFCKG reason RUFK and it still does't fucking work the output keeps
+// changing FUCK 
+if (ndone>nstart)
+{
+// out stores attempts with lot of info including a
+// copy of blob that may need to be fixed too
+const StrTy fn=out.result_file(ndone-1); 
+MM_ERR(MMPR4(nstart,ndone,fn,__FUNCTION__))
+//BibEntry be;
 
+BibEntryMap bm;
+bm.parse(fn);
+if (bm.size()==0)
+{
+MM_ERR(" no ibtex found "<<MMPR(fn))
+out.exit(nm);
+return 0;
+}
+BibEntry  be=*(bm.begin()); // ((*(bem.begin())).second)[0];
+//be.load(fn);
+StrTy s=be.get("x_graph_name");
+if (s.length()) be.setclear("author",s);
+be.setclear("title",s+" LinkedIn Profile" );
+be.setclear("url",uin);
+StrTy lang=be.get("x_graph_knowslanguage_name");
+StrTy locationg=be.get("x_graph_address_addresslocality");
+ locationg+=" "+be.get("x_graph_address_addresscountry");
+StrTy abstract=be.get("x_graph_text");
+if (locationg.length()) be.setclear("city",locationg);
+if (abstract.length()) be.setclear("abstract",abstract);
+
+typedef std::vector<StrTy> V;
+V v,vin;
+v=be.grep_keys(vin);
+//be.add(m);
+//be.type("article");
+//be.name("missing");
+Blob b;
+b=be.format();
+MM_ERR(" fixing kv map "<<MMPR(StrTy(b)))
+b.save(fn);
+//IdxTy rcfge= out.good_enough(b,fnbib,in,uin,nm,0);
+
+} 
 
 out.exit(nm);
 return 0;
