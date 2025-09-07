@@ -1,0 +1,8 @@
+/home/scripts/lat/scripts/eutilsnew
+run_toobib
+proj_files.txt
+/home/scripts/toobib
+unimathsymbols.txt
+README.txt
+test_extract.sh
+/opt/google/chrome/mike-chrome

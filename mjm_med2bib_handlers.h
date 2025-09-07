@@ -471,7 +471,8 @@ CmdVec cv;
 // 2023-10-29 may also have a "/full" or probably others...
 // https://www.spiedigitallibrary.org/conference-proceedings-of-spie/2808/1/Progress-in-soft-x-ray-and-UV-photocathodes/10.1117/12.256036.short
 //const StrTy moretermcrap="| sed -e 's/\\/full$//'";
-const StrTy moretermcrap="| sed -e 's/\\/full$//'| sed -e 's/.short$//'";
+//const StrTy moretermcrap="| sed -e 's/\\/full$//'| sed -e 's/.short$//'";
+const StrTy moretermcrap="| sed -e 's/[./]full$//'| sed -e 's/[./]short$//'";
 // first observed on citeseer
 const StrTy termcrap="| sed -e 's/[&?].*//'";
 //https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0014707
@@ -524,6 +525,7 @@ const StrTy doi=MutateOnly(uin, cmd,out);
 const StrTy doimore=MutateOnly(uin, cmd+moretermcrap,out);
 MM_ERR("doixxxtest "<< MMPR4(uin,doi,doimore,cmd)<<MMPR((cmd+moretermcrap)))
 if (doi.length()<5 ) continue;
+MM_ERR("icandidate doixxxtest "<< MMPR2(doi,doimore))
 //if (seen.find(doi)!=seen.end()) continue;
 ++seen[doi];
 IdxTy rcx=get_xref(out,in,doi,nm,0);
