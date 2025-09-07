@@ -469,7 +469,9 @@ const IdxTy nstart=out.found();
 typedef std::vector<StrTy> CmdVec;
 CmdVec cv;
 // 2023-10-29 may also have a "/full" or probably others...
-const StrTy moretermcrap="| sed -e 's/\\/full$//'";
+// https://www.spiedigitallibrary.org/conference-proceedings-of-spie/2808/1/Progress-in-soft-x-ray-and-UV-photocathodes/10.1117/12.256036.short
+//const StrTy moretermcrap="| sed -e 's/\\/full$//'";
+const StrTy moretermcrap="| sed -e 's/\\/full$//'| sed -e 's/.short$//'";
 // first observed on citeseer
 const StrTy termcrap="| sed -e 's/[&?].*//'";
 //https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0014707
@@ -480,7 +482,8 @@ cv.push_back( "sed -e 's/.*doi//' | sed -e 's/[.=a-zA-Z;\\/]*10/10/' |  grep \"^
 // these 'tards not automation friendly get normalget right... 
 //https://iopscience.iop.org/article/10.1088/0034-4885/79/8/084502
 cv.push_back( "sed -e 's/.*article\\/10/10/'| sed -e 's/.*pdf\\/10/10/'  | grep \"^10\" |sed -e 's/[?&#].*//' |  grep \"/\" "+termcrap); // doi=, plos
-
+// last ditch 
+cv.push_back( "sed -e 's/.*\\/\\(10[.][0-9][0-9]\\)/\\1/'| sed -e 's/.*pdf\\/10/10/'  | grep \"^10\" |sed -e 's/[?&#].*//' |  grep \"/\" "+termcrap); // doi=, plos
 
 //https://www.recercat.cat/bitstream/handle/2072/368596/10.1038%40s41560-019-0404-4.pdf?sequence=1
 
@@ -519,7 +522,7 @@ MM_LOOP(ii,cv)
 const StrTy& cmd=(*ii);
 const StrTy doi=MutateOnly(uin, cmd,out);
 const StrTy doimore=MutateOnly(uin, cmd+moretermcrap,out);
-MM_ERR(MMPR4(uin,doi,doimore,cmd))
+MM_ERR("doixxxtest "<< MMPR4(uin,doi,doimore,cmd)<<MMPR((cmd+moretermcrap)))
 if (doi.length()<5 ) continue;
 //if (seen.find(doi)!=seen.end()) continue;
 ++seen[doi];
