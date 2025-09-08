@@ -926,6 +926,12 @@ StrTy("window.resizeTo(100,100);")
 if (false) ExecBroCmd(fi,"navigator_override");
 if (true) ExecBroCmd(fi,"delete_window");
 
+// in head mode it downloads after verify into Download dir.. 
+ // https://www.researchgate.net/profile/Arman-Mahboubi-Soufiani/publication/283729703_Optical_Properties_of_Photovoltaic_Organic-Inorganic_Lead_Halide_Perovskites/links/614b94473c6cb31069875863/Optical-Properties-of-Photovoltaic-Organic-Inorganic-Lead-Halide-Perovskites.pdf
+fetch_info fi;
+SetDownloadPath(fi,m_download_dir,1);
+
+
 } // m_session 
 
 return rc;
@@ -1103,6 +1109,14 @@ ExecBroCmd(fi,"enable_debugger",flags); // needs to be a const not flags
 
 // 2025-04-19 does nothing still getting HeaclessChrome UA 
 SetUA(m_ua,0);
+
+
+// in head mode it downloads after verify into Download dir.. 
+ // https://www.researchgate.net/profile/Arman-Mahboubi-Soufiani/publication/283729703_Optical_Properties_of_Photovoltaic_Organic-Inorganic_Lead_Halide_Perovskites/links/614b94473c6cb31069875863/Optical-Properties-of-Photovoltaic-Organic-Inorganic-Lead-Halide-Perovskites.pdf
+fetch_info fi;
+SetDownloadPath(fi,m_download_dir,1);
+
+
 // navigate likely just causing a bad request 
 // wrong cross origin fck up doh 
 // this worked in one test case that was slently failing. 
@@ -1114,6 +1128,7 @@ ExecBroCmd(fi, "navigateref",url,ref);
 }
 else { ExecBroCmd(fi, "navigate",url); }
 
+SetDownloadPath(fi,m_download_dir,1);
 if (skip_dom) return 0; 
 
 
@@ -1124,6 +1139,8 @@ MM_ERR(" sleeping for input ")
 sleep(3);
 ExecBroCmd(fi,"mouse_moved","100","120");
 sleep(3);
+//fetch_info fi;
+
 ExecBroCmd(fi,"get_targets",flags); // needs to be a const not flags 
 ExecBroCmd(fi,"get_frametree",flags); // needs to be a const not flags 
 if ( m_chrome_with_head)
@@ -1821,6 +1838,7 @@ if ( m_chrome_with_head)
 
 //m_options=" --start-minimized  --window-size=128x128 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins  --crash-dump-dir=/tmp ";
 m_options=" --start-minimized  --window-size=128x128 --enable-logging=stderr --v=1  --crash-dump-dir=/tmp ";
+m_options=" --disable-plugins --start-minimized  --window-size=128x128 --enable-logging=stderr --v=1  --crash-dump-dir=/tmp ";
 
 //m_options="  --window-size=128x128 --enable-logging=stderr --v=1  --disable-gpu   --crash-dump-dir=/tmp ";
 
@@ -1905,7 +1923,8 @@ m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chr
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36";
-
+// may need to match the "Brand" info 
+m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36";
 m_bro_name="/opt/google/chrome/chrome";
 // script to pickup ld path 
 m_bro_name="/opt/google/chrome/mike-chrome";
@@ -1963,6 +1982,12 @@ m_tmp_dir="/tmp";
 //m_download_path="./chromate_downloads";
 m_download_path="chromate_downloads";
 m_download_dir=m_tmp_dir+"/"+m_download_path;
+// fucking ignored now? FUCK
+//m_download_path="Downloads";
+//m_download_dir="/home/marchywka/"+m_download_path;
+// fucking ignored now? FUCK
+
+
 //m_download_dir=m_download_path;
 MakeBroCmd();
 
@@ -2165,7 +2190,9 @@ StrTy("\"headers\":") +StrTy("{") +StrTy("\"sec-ch-ua\"")
 
 */
 CmdParam v;
-v.add("sec-ch-ua",StrTy("\"Google Chrome\";v=\"113\", \"Chromium\";v=\"113\", \"Not-A.Brand\";v=\"24\""));
+//sec-ch-ua: "Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"
+//v.add("sec-ch-ua",StrTy("\"Google Chrome\";v=\"113\", \"Chromium\";v=\"113\", \"Not-A.Brand\";v=\"24\""));
+v.add("sec-ch-ua",StrTy("\"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\", \"Not-A.Brand\";v=\"99\""));
 v.add("sec-ch-ua-mobile",StrTy("\"?0\""));
 v.add("sec-ch-ua-platform",StrTy("\"Linux\""));
 v.add("Referer",StrTy("https://www.google.com/search?q=referer+header&ie=UTF-8"));
