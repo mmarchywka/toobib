@@ -171,6 +171,8 @@ AddPair("guesswhoiris",&Myt::guesswhoiris,"\\.who\\.int/iris/");
 AddPair("guesshandle",&Myt::guesshandle,"/handle/"); 
 AddPair("guessbitstream",&Myt::guessbitstream,"/bitstream/"); 
 AddPair("guesshal",&Myt::guesshal,"hal\\.science"); 
+// https://rucore.libraries.rutgers.edu/rutgers-lib/50040/PDF/1/play/
+AddPair("guessrutgers",&Myt::guessrutgers,"libraries\\.rutgers\\.edu/rutgers-lib"); 
 
 // 2011  #./chromate.out "mode 0" launch "wget xxx.pdf https://authors.library.caltech.edu/32187/1/BROsiamjssc85.pdf"
 // 2012  # https://authors.library.caltech.edu/32187/

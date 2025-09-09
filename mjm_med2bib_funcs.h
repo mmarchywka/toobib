@@ -739,6 +739,39 @@ out.exit(nm);
 return 0;
 } // guesshal
 
+// https://rucore.libraries.rutgers.edu/rutgers-lib/50040/PDF/1/play/
+//AddPair("guessrutgers",&Myt::guessrutgers,"libraries\\.rutgers\\.edu/rutgers-lib");
+ static  IdxTy guessrutgers(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
+{
+const StrTy nm="guessrutgers";
+out.enter(nm);
+const StrTy & uin=in.uin();
+StrTy url="";
+const StrTy fn=out.fn(); //
+const StrTy fntemp=out.fn("temp"); //
+const StrTy fnbib=out.fn("bibtex"); //
+const IdxTy nstart=out.found();
+//const StrTy nurl=MutateOnly(uin, "sed -e 's/xmlui\\/bitstream/xmlui/'| sed -e 's/\\/[0-9]*\\.pdf.*//'" ,out );
+//StrTy nurl=MutateOnly(uin, " sed -e 's;\\(science/[a-z][a-z][a-z]-[^/][^/]*\\)/.*;\\1;' " ,out );
+StrTy nurl=MutateOnly(uin, " sed -e 's;/PDF.*;;' " ,out );
+MM_ERR(MMPR3(nm,uin,nurl))
+if ((nurl!=uin)&&( nurl.length()!=0))
+{
+//nurl="http://hdl.handle.net"+nurl;
+MM_ERR(MMPR3(nm,uin,nurl))
+//InpTy in2(in,nurl);
+//OutTy out2(out,nurl);
+IdxTy rcr=Recurse(in,out,nurl);
+//IdxTy rc=handleisbib(in2,out2,xflags); // in.mom()->Guess(in2,out2,in.rflags());
+MM_ERR(" return from recurions adopting now ... "<<MMPR(nurl))
+//MM_MSG(MMPR(out2.found()))
+//out.adopt(out2);
+}
+// otherwise isbib should still work later... but check for others 
+out.exit(nm);
+return 0;
+} // guessrutgers
+
 
 
 

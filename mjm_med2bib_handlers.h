@@ -4003,7 +4003,7 @@ if (x==StrTy("wkhealth_authors"))
 {
 const IdxTy len=nval.length();
 const char * s=nval.c_str();
-char * p= new char [1+(len<<3)];
+char * p= (char*) new char[1+(len<<3)];
 IdxTy pc=0;
 for(IdxTy i=0; i<len; ++i)
 {
@@ -4019,13 +4019,13 @@ else { p[pc]=s[i]; ++pc; }
 p[pc]=0;
 m["author"]+=StrTy(p);
 
-delete p;
+delete[] p;
 }
 else if (x==StrTy("wkhealth_date"))
 {
 const IdxTy len=nval.length();
 const char * s=nval.c_str();
-char * p= new char [1+(len<<3)];
+char * p= new char[1+(len<<3)];
 IdxTy pc=0;
 bool not_good=true;
 for(IdxTy i=0; i<len; ++i)
@@ -4052,7 +4052,7 @@ m["date"]=nval;
 }
 else { p[pc]=s[i]; ++pc; }
 }
-delete p;
+delete[] p;
 if (not_good) munge(m,nkey,nval,"wkhealth_",l,0);
 }
 else if (x==StrTy("wkhealth_reference"))
