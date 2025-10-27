@@ -207,7 +207,7 @@ char * line= new char[4096];
 while (true)
 {
 long unsigned int sz=4094;
-getline(&line,&sz,fddin);
+IdxTy copilewarn=getline(&line,&sz,fddin);
 if (line[0]==0) { sleep(1); }
 else { m_pid=line; 
 // AUCK

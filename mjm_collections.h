@@ -8,6 +8,8 @@
 // for ragged now 
 #include "mjm_string_kvp.h"
 
+#include "mjm_bin_cols.h" 
+#include "../nettle/mjm_ya_buffer.h" 
 #include "mjm_string_tokenizer.h"
 // needed for treelayout apparently
 //#include "mjm_gen_viz.h"
@@ -530,6 +532,8 @@ const StrTy dump(const IdxTy flags=0) const
 { Ss ss; dump(ss); return ss.str(); }  
 }; // _ActualLine
 
+typedef mjm_ya_buffer<Tr> YaBuf;
+typedef mjm_bin_cols<Tr> BinCols;
 // API
 
 public:
@@ -664,8 +668,10 @@ const bool debug=((flags&8)!=0);
 const bool csv=((flags&16)!=0);
 const bool pdftext=((flags&32)!=0);
 const bool ignore_2delims=((flags&64)!=0);
+const bool no_show_msg=((flags&(1<<16))!=0);
 //MM_ERR(" cmd_read_ragged from "<<fn<<" to "<<name<<" flags "<<flags)
-MM_ERR(MMPR(__FUNCTION__)<<MMPR4(cmd,fn,name,flags)<<MMPR4(debug,csv,pdftext,ignore_2delims)<<MMPR4(load_string, load_parsed,tabsep,ignore_hash))
+if ( ! no_show_msg) { MM_ERR(MMPR2(__FUNCTION__,no_show_msg)<<MMPR4(cmd,fn,name,flags)<<MMPR4(debug,csv,pdftext,ignore_2delims)<<MMPR4(load_string, load_parsed,tabsep,ignore_hash))
+}
 
 Myt & r=*this; // rm[name];
 //Ragged & r=rm[name];
@@ -684,7 +690,47 @@ else r.load_lines(fn,debug);
 MM_ERR(MMPR2(r.size(),name))
 } // load_canned
 
-
+void load_bin(IsTy * is, const StrTy & sin, const IdxTy flags)
+{
+BaseParams kvp(sin);
+IdxTy bsize=(1<<16);
+kvp.get(bsize,"bsize");
+BinCols bc(sin,flags);
+MM_ERR(MMPR(bsize))
+YaBuf ya;
+ya.size(bsize);
+while (true)
+{
+Line l;
+std::vector<StrTy> words;
+bool eof=ya.get_from_stream(is);
+if (is->bad()) { MM_ERR("bad ") break; }
+IdxTy n=0;
+MM_ERR(MMPR4(is->bad(),is->eof(),is->fail(),ya.available()))
+while(0!=(n=ya.available()))
+{
+char * s=new char[n];
+ya.read(s,n,1);
+IdxTy nused=n;
+IdxTy rc=bc.add(l,s,nused,eof?1:0);
+delete [] s;
+if (n<nused) { ya.take(n);  MM_ERR(" fcker "<<MMPR2(n,nused)) break; } 
+ya.take(nused);
+MM_ERR(MMPR4(size(),rc,nused,ya.available()))
+// if rc==0, rhw linw ia o abd readly to add
+if (rc==0) { add(l); l.clear(); continue; } 
+// if eof have to eave crap there
+if (eof ) break; 
+// otherwie continue to get stuff;
+} // ya
+if (eof) break;
+if (ya.available()==0) if (is->fail()) { MM_ERR("bad ") break; }
+} 
+if ( ya.available())
+{ MM_ERR(" read ended with straggles "<<MMPR(ya.available())) } 
+MM_ERR(MMPR(size()))
+MM_ERR(MMPR(dump_ssv()))
+} // load_bin
 
 
 
@@ -795,7 +841,7 @@ if (f>first) ss<<l[first];
 for(IdxTy k=(first+1); k<f; ++k) ss<<sep<<l[k];
 return ss.str();
 } // sum
-
+//Myt& operator<<(const D & x) { Ss ss; ss<<x; (*this)<<ss.str(); } 
 Myt& operator<<(const StrTy & word) 
 {
 
@@ -1218,6 +1264,13 @@ if (x) { ss<<'\\'; }
 ss<<c;  
 return x; 
 }  
+
+void save_ssv(const StrTy & fn, const IdxTy  flags=0)  const
+{
+std::ofstream ofs(fn);
+ofs<<dump_ssv();
+}
+
 
 // TODO FIXME add a latex output option 
 // should have a sg to dump to a srream 

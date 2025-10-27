@@ -599,10 +599,11 @@ const bool hdr_ua=Bit(flags,8); // use user-agent in hdr map
 const bool extra_chrome_headers=!Bit(flags,9); // use stuff that chrome added  
 //const bool debug=Bit(flags,8); // dump more output 
 const bool me_ua=Bit(flags,10); // use user-agent in hdr map  
+const bool stupid_simple=Bit(flags,11); // use user-agent in hdr map  
 
 const bool use_ua=bro_ua;
 const bool use_acc=bro_acc||bib_acc;
-MM_ERR(MMPR4(flags,use_ua,me_ua,bro_ua))
+MM_ERR(MMPR4(flags,use_ua,me_ua,bro_ua)<<MMPR(stupid_simple))
 if (only_if_missing)
 {
 const bool exists=Exists(dest);
@@ -736,6 +737,7 @@ cmd+=" --header=\""+(*ii).first+": "+(*ii).second+"\"";
 if (post) cmd+=" --post-data=\""+pdata+"\" ";
 cmd+=" -O \""+dest+"\" \""+StrTy(url)+"\"";
 //MM_ERR(MMPR(cmd))
+if (stupid_simple){  cmd=m_cmd; cmd+=" --user-agent=toobib -O \""+dest+"\" \""+StrTy(url)+"\""; }
 IdxTy c=m_hand.fileio(out,err,data,cmd);
 bool bad_resp=false;
 {

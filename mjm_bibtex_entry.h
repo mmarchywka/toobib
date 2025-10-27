@@ -1394,7 +1394,7 @@ typename TgtM::iterator m_ii;
 class iter_wov_ord
 {
 public:
-iter_wov_ord(WovBibDB  & m, const OrdVec & o  ) : m_db_map(m), m_ord(o) {
+iter_wov_ord(WovBibDB  & m, const OrdVec & o  ) : m_db_map(m), m_ord(o),m_pv(0) {
 m_sz=m_ord.size();
 m_o=0;
 bump();

@@ -1026,6 +1026,8 @@ return 0;
 
  static  IdxTy guessscidirect(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
 { 
+// 2025
+// https://www.sciencedirect.com/sdfe/arp/cite?pii=S1043661820313554&format=text%2Fx-bibtex&withabstract=true
 //pii=`echo $uin | sed -e 's/.*\///g' | sed -e 's/[^0-9A-Za-z]//g'`
 //debugstrat  guessscidirect uin  $uin pii  $pii
 //url201803="https://www.sciencedirect.com/sdfe/arp/cite?pii=$pii&format=text/x-bibtex&withabstract=false"
@@ -1034,14 +1036,18 @@ out.enter(nm);
 const StrTy & uin=in.uin();
 StrTy url="";
 const StrTy urli="https://www.sciencedirect.com/sdfe/arp/cite?pii=";
-const StrTy urlf="&format=text/x-bibtex&withabstract=false";
+//const StrTy urlf="&format=text/x-bibtex&withabstract=false";
+const StrTy urlf="&format=text%2Fx-bibtex&withabstract=true";
 //const StrTy cmdin="( sed -e 's/.*\\///g' | sed -e 's/[^0-9A-Za-z]//g' ) ";
 // now insert parens at the call 
 const StrTy cmdin=" sed -e 's/.*\\///g' | sed -e 's/[^0-9A-Za-z]//g'  ";
 cmd_exec(url,uin,cmdin,out,0);
 url=urli+url+urlf;
 const StrTy fnbib=out.fn("bibtex"); //
-Grc grc=in.getter().normalget(fnbib,url,16);
+// this moscks up chrome with wget and returns unsupported brower
+// but setting ua in wget to xxx works? 
+//Grc grc=in.getter().normalget(fnbib,url,16);
+Grc grc=in.getter().normalget(fnbib,url,2048);
 Blob b;
 IdxTy rcf= out.good_enough(b,fnbib,in,url,nm,0);
 out.exit(nm);

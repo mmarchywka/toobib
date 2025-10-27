@@ -109,6 +109,9 @@ g++ -std=gnu++11 -DTEST_toobib__ -gdwarf-3 -O0 -MMD -MF toobib.deps -I. -I/home/
 
 #include "mjm_globals.h"
 
+//#include "mjm_collections.h"
+//#include "mjm_bin_cols.h"
+#include "mjm_canned_methods.h"
 #include "mjm_bibtex_find.h"
 #include "mjm_med2bib_guesses.h"
 // the dmel is not really needed or used but also include elaswhereh
@@ -118,7 +121,6 @@ g++ -std=gnu++11 -DTEST_toobib__ -gdwarf-3 -O0 -MMD -MF toobib.deps -I. -I/home/
 #include "mjm_logic_base.h"
 #include "mjm_strings.h"
 
-#include "mjm_canned_methods.h"
 
 
 #include "mjm_cli_ui.h"

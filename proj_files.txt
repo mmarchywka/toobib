@@ -6,3 +6,4 @@ unimathsymbols.txt
 README.txt
 test_extract.sh
 /opt/google/chrome/mike-chrome
+/home/scripts/exifutil

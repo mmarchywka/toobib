@@ -46,7 +46,8 @@ public:
 mjm_char_star_map() {}
 ~mjm_char_star_map() {}
 //template <int n> V & operator[](const char[n]  k) { return (*this)[K(&k)]; }  
- V & operator[](const char *   k) { return (Super(*this))[K(k)]; }  
+ //V & operator[](const char *   k) { return (Super(*this))[K(k)]; }  
+ V & operator[](const char *   k) { return Super::operator[](K(k)); }  
 
 StrTy dump(const IdxTy flags=0) { return Dump(flags); }
 private:
