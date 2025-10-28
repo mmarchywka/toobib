@@ -721,7 +721,10 @@ foup["Sec-Fetch-Dest"]="document";
 // it is returning gzip lol 
 //fckoup["Accept-Encoding"]="gzip, deflate, br";
 foup["Accept-Language"]="en-US";
-foup["sec-ch-ua"]="\\\" Not A;Brand\\\";v=\\\"99\\\", \\\"Chromium\\\";v=\\\"90\\\", \\\"Google Chrome\\\";v=\\\"90\\\"";
+// needs to match us string 
+//foup["sec-ch-ua"]="\\\" Not A;Brand\\\";v=\\\"99\\\", \\\"Chromium\\\";v=\\\"90\\\", \\\"Google Chrome\\\";v=\\\"90\\\"";
+const StrTy ua_ver="139";
+foup["sec-ch-ua"]="\\\" Not A;Brand\\\";v=\\\""+ua_ver+"\\\", \\\"Chromium\\\";v=\\\""+ua_ver+"\\\", \\\"Google Chrome\\\";v=\\\""+ua_ver+"\\\"";
 foup["sec-ch-ua-mobile"]="?0";
 foup["Referer"]="https://www.google.com";
 
@@ -803,6 +806,10 @@ m_me_ua=" TooBib/Dev ; build "+StrTy(__DATE__)+StrTy(__TIME__)+   " mailto:march
 
 //m_uahey="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36";
 m_uahey="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36";
+// 2025 bad browser with above although "xx" works at scidirect wtf
+// the brand info needs to match apparently 139
+m_uahey="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36";
+
 m_acchey="text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
 m_accheyb="text/plain,text/bibtex,text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
 //WGET_BASE=" --no-use-server-timestamps $cook --no-check-certificate "

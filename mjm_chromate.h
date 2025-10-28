@@ -2192,6 +2192,7 @@ StrTy("\"headers\":") +StrTy("{") +StrTy("\"sec-ch-ua\"")
 CmdParam v;
 //sec-ch-ua: "Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"
 //v.add("sec-ch-ua",StrTy("\"Google Chrome\";v=\"113\", \"Chromium\";v=\"113\", \"Not-A.Brand\";v=\"24\""));
+// needs to match ua string
 v.add("sec-ch-ua",StrTy("\"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\", \"Not-A.Brand\";v=\"99\""));
 v.add("sec-ch-ua-mobile",StrTy("\"?0\""));
 v.add("sec-ch-ua-platform",StrTy("\"Linux\""));
