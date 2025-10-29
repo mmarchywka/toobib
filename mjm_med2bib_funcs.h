@@ -2399,7 +2399,8 @@ cat "$fn" | inserturl "$uin"
 // the pdf has a downloaded from link, 
 //  more xxx.txt| grep http
 //Downloaded from https://academic.oup.com/jcem/article/85/9/3121/2660502 by guest on 11 July 2021
-
+// 2025 fails on wget 
+// https://academic.oup.com/Citation/Download?resourceId=269769&resourceType=3&citationFormat=2
  static  IdxTy guessoup(const InpTy & in , OutTy & out , const IdxTy xflags=0)  { 
 
 const StrTy nm="guessoup";
@@ -2417,9 +2418,21 @@ const StrTy numb=MutateOnly(uin, " sed -e 's;[^0-9]*$;;' | sed -e 's;.*/;;' ",ou
 const StrTy baseurl="https://academic.oup.com/Citation/Download?resourceId=";
 const StrTy endurl="&resourceType=3&citationFormat=2";
 const StrTy url=baseurl+numb+endurl;
-Grc grc1=in.getter().normalget(fntemp,url,2);
+//Grc grc1=in.getter().normalget(fntemp,url,2);
+// 2025-10 forbidden wgets now ... 
+//Grc grc=in.getter().headlessget(fntemp,url,1);
+// this is getting the file but it has a trailing comma in last
+// entry and need dos2unix fuk
+Grc grc=in.getter().headlessdownload(fntemp,url,16+(32));
 MM_ERR(MMPR4(fntemp,uin,numb,url))
-IdxTy rc=filter_small_file(fnbib, fntemp, "sed -n '/^@/,//p'", out, 0);
+//IdxTy rc=filter_small_file(fnbib, fntemp, "sed -n '/^@/,//p'", out, 0);
+//const StrTy fil= "sed -n '/^@/,//p' | dos2unix ";
+// 2025-10
+const StrTy fil= "sed -n '/^@/,//p' |sed -e 's/\\r//g' |  sed -e 's/,$//g'| awk 'BEGIN{x=$0;stop=0}{if ($1==\"}\") stop=1; if (stop!=1)  {if (x!=\"\") print x\",\"} else {print x; }x=$0; }END{print x; }'";
+
+
+IdxTy rc=filter_small_file(fnbib, fntemp, fil, out, 0);
+//IdxTy rc=filter_small_file(fnbib, fntemp, "sed -n '/^@/,//p' | dos2unix ", out, 0);
 Blob b;
 b.load(fnbib);
 IdxTy rcf= out.good_enough(b,fnbib,in,url,nm,0);

@@ -1261,7 +1261,7 @@ StrTy CompleteDest(const StrTy  & fn, const bool fix_output_location )
 StrTy base,file;
 base=Exec("dirname \""+fn+"\"");
 file=Exec("basename \""+fn+"\"");
-MM_ERR(MMPR3(fn,base,file))
+MM_ERR(MMPR4(__FUNCTION__,fn,base,file))
 return fn;
 }
 fetch_info Download(const StrTy & fn, const StrTy & url, const IdxTy flags) 
@@ -1348,7 +1348,7 @@ if (niter>nmax) break;
 ++niter;
 StrTy nm;
 IdxTy stat=DirStats(nm,dw,0);
-MM_ERR(MMPR3(niter,stat,dw.size()))
+MM_ERR(MMPR4(niter,stat,dw.size(),nm))
 if (stat==IdxTy(~0)) break;
 //dw.check(0);
 //if (dw.size()==0) { sleep(1); continue; } 
@@ -1360,6 +1360,7 @@ if (stat==0) { mysleep(1); continue; }
 //const StrTy fndest=e.name();
 if (stat==1)
 {
+// this is the file detected by dir watch 
 const StrTy fndest=nm; // e.name();
 const StrTy movcmd="cp \""+m_download_dir+"/"+fndest+"\" \""+CompleteDest(fn,fix_output_location)+"\"";
 MM_ERR(MMPR(movcmd))

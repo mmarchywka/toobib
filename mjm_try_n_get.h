@@ -86,6 +86,9 @@ typedef _ResultType ResultType;
 typedef ResultType AccessTy;
 
 
+
+// API
+
 public:
 typedef std::map<StrTy, StrTy> HdrMap;
 mjm_try_n_get() {Init();}
@@ -599,7 +602,7 @@ const bool hdr_ua=Bit(flags,8); // use user-agent in hdr map
 const bool extra_chrome_headers=!Bit(flags,9); // use stuff that chrome added  
 //const bool debug=Bit(flags,8); // dump more output 
 const bool me_ua=Bit(flags,10); // use user-agent in hdr map  
-const bool stupid_simple=Bit(flags,11); // use user-agent in hdr map  
+const bool stupid_simple=Bit(flags,11); // use user-agent in  for app simple   
 
 const bool use_ua=bro_ua;
 const bool use_acc=bro_acc||bib_acc;
@@ -724,6 +727,7 @@ foup["Accept-Language"]="en-US";
 // needs to match us string 
 //foup["sec-ch-ua"]="\\\" Not A;Brand\\\";v=\\\"99\\\", \\\"Chromium\\\";v=\\\"90\\\", \\\"Google Chrome\\\";v=\\\"90\\\"";
 const StrTy ua_ver="139";
+// ua vesion needs to match the user-agent version info 
 foup["sec-ch-ua"]="\\\" Not A;Brand\\\";v=\\\""+ua_ver+"\\\", \\\"Chromium\\\";v=\\\""+ua_ver+"\\\", \\\"Google Chrome\\\";v=\\\""+ua_ver+"\\\"";
 foup["sec-ch-ua-mobile"]="?0";
 foup["Referer"]="https://www.google.com";
@@ -740,7 +744,8 @@ cmd+=" --header=\""+(*ii).first+": "+(*ii).second+"\"";
 if (post) cmd+=" --post-data=\""+pdata+"\" ";
 cmd+=" -O \""+dest+"\" \""+StrTy(url)+"\"";
 //MM_ERR(MMPR(cmd))
-if (stupid_simple){  cmd=m_cmd; cmd+=" --user-agent=toobib -O \""+dest+"\" \""+StrTy(url)+"\""; }
+//if (stupid_simple){  cmd=m_cmd; cmd+=" --user-agent=toobib -O \""+dest+"\" \""+StrTy(url)+"\""; }
+if (stupid_simple){  cmd=m_cmd; cmd+=" --user-agent=\""+m_app_ua+"\" -O \""+dest+"\" \""+StrTy(url)+"\""; }
 IdxTy c=m_hand.fileio(out,err,data,cmd);
 bool bad_resp=false;
 {
@@ -801,8 +806,8 @@ m_cook=StrTy(" --load-cookies=")+m_cookie_file+StrTy(" --save-cookies=")
 +m_cookie_file +StrTy(" --keep-session-cookies") ;
 
 
-m_me_ua=" TooBib/Dev ; build "+StrTy(__DATE__)+StrTy(__TIME__)+   " mailto:marchywka@hotmail.com ; hardcoded developer version; see texhax or google marchywka toobib  "; 
-
+m_me_ua=" TooBib/Dev ; build "+StrTy(__DATE__)+StrTy(__TIME__)+   " mailto:marchywka@hotmail.com ; hardcoded developer version; see texhax or google github mmarchywka toobib  "; 
+if (m_app_ua=="") m_app_ua=m_me_ua;
 
 //m_uahey="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36";
 m_uahey="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36";
@@ -864,6 +869,7 @@ StrTy m_cookie_file;
 StrTy m_cook,m_me_ua,m_uahey,m_acchey,m_accheyb, m_opt2;
 StrTy m_cmd,m_bro;
 StrTy m_json_cmd; 
+StrTy m_app_ua;
 }; // mjm_try_n_get
 
 //////////////////////////////////////////////

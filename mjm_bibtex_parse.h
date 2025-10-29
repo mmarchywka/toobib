@@ -627,6 +627,11 @@ CharCoS(m,"need right brace(s) to end entry  ",c,p,pc,len,state,braces) ; return
 c=p[pc]; 
 // DBLP:conf/pics/Leubner99,
 if ((! CharOk(c,BIBNAME|m_name_mask,clut)&&(c!=':')&&(c!='/')) 
+// 2025-10 fuking oup sht
+// how the FUCK does medical researh or anything else ever
+// get fucking done its just stupid fucking shit. 
+&&(c!='(')
+&&(c!=')')
 // latex seems ok with non-ascii citations names 
  && (CharOk(c,NONEXCEPTIONAL,clut)) )
 {
