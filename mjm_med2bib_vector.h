@@ -5,6 +5,8 @@ AddPair("guesscell",&Myt::guesscell,"=www.cell.com");
  AddPair("guesshind",&Myt::guesshind,"hindawi.com"); 
  AddPair("guesspmc",&Myt::guesspmc,"ncbi.nlm.nih.*PMC[0-9]"); 
  AddPair("guesspmceuro",&Myt::guesspmceuro,"europepmc.org.*PMC/[0-9]"); 
+// 2025-11 https://www.gastrojournal.org/article/0016-5085(92)90777-V/pdf
+ AddPair("guessgastro",&Myt::guessgastro,"gastrojournal\\.org/"); 
 // 2025-11 pmc numbers don't work fck 
  AddPair("guessepmc",&Myt::guessepmc,"europepmc.org"); 
 // AddPair("guessepmc",&Myt::guesspmc,"europepmc.org"); 

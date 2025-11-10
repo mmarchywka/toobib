@@ -376,6 +376,33 @@ out.exit(nm);
 return 0; 
 }
 
+// 2025-11 https://www.gastrojournal.org/article/0016-5085(92)90777-V/pdf
+// AddPair("guessgastro",&Myt::guessgastro,"gastrojournal\.org/");
+static  IdxTy guessgastro(const InpTy & in , OutTy & out , const IdxTy xflags=0)  { 
+const StrTy nm="guessgastro";
+out.enter(nm);
+const StrTy & uin=in.uin();
+const StrTy temp=out.fn("temp");
+
+StrTy nurl="";
+StrTy cmd="sed -e 's;/.[^/][^/]*$;/fulltext;g' ";
+cmd_exec(nurl,uin,cmd,out,4);
+MM_ERR(MMPR3(cmd,nurl,uin))
+InpTy in2(in,nurl);
+OutTy out2(out,nurl);
+//IdxTy rc=in.mom()->Guess(in2,out2,in.rflags());
+const IdxTy rc=handledoi(in2,out2,in.rflags());
+MM_ERR(" return from recurions adopting now ... "<<MMPR(nurl))
+//MM_MSG(MMPR(out2.found()))
+out.adopt(out2);
+//MM_ERR(MMPR2(murc,ufic))
+out.exit(nm);
+return rc; 
+} // guessgastro
+
+
+
+
 // What the is this 
 // 2025-10 not working vector to pmc 
 // https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=(EXT_ID:9646551%20AND%20SRC:MED)&format=json&resultType=core
