@@ -5,7 +5,9 @@ AddPair("guesscell",&Myt::guesscell,"=www.cell.com");
  AddPair("guesshind",&Myt::guesshind,"hindawi.com"); 
  AddPair("guesspmc",&Myt::guesspmc,"ncbi.nlm.nih.*PMC[0-9]"); 
  AddPair("guesspmceuro",&Myt::guesspmceuro,"europepmc.org.*PMC/[0-9]"); 
+// 2025-11 pmc numbers don't work fck 
  AddPair("guessepmc",&Myt::guessepmc,"europepmc.org"); 
+// AddPair("guessepmc",&Myt::guesspmc,"europepmc.org"); 
  AddPair("guessasm",&Myt::guessasm,"asm.org"); 
  AddPair("guessnature",&Myt::guessnature,"nature.com"); 
  AddPair("guessjes",&Myt::guessjes,"jes.ecsdl.org"); 
@@ -126,6 +128,11 @@ AddPair("guessohiolink",&Myt::guessohiolink,"\\.ohiolink\\.edu/");
 AddPair("guessdiscoverac",&Myt::guessdiscoverac,"//discover.*\\.ac\\.uk/"); 
 // https://core.ac.uk/reader/76958504?utm_source=linkout
 AddPair("guesscoreac",&Myt::guesscoreac,"//core\\.ac\\.uk/"); 
+
+// https://ora.ox.ac.uk/objects/uuid:09a21c6c-535c-4ccb-adc2-573f7b9ea4a2/
+// https://ora.ox.ac.uk/objects/uuid:09a21c6c-535c-4ccb-adc2-573f7b9ea4a2/files/rp2676w878
+AddPair("guessoraoxac",&Myt::guessoraoxac,"//ora\\.ox\\.ac\\.uk/"); 
+
 
 // https://en.wikipedia.org/wiki/Wikipedia:Citing_Wikipedia
 AddPair("guesswikipedia",&Myt::guesswikipedia,"wikipedia\\.org/"); 

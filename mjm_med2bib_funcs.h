@@ -299,9 +299,18 @@ out.enter(nm);
 const StrTy & uin=in.uin();
 //num=`echo "$uin" | sed -e 's;/;\n;g'| grep "[0-9]" | grep PMC `
 //citex="\\cite{$num}"
-const StrTy cmd="sed -e 's;/;\\n;g'| grep \"[0-9]\" | grep PMC ";
+StrTy cmd="sed -e 's;/;\\n;g'| grep \"[0-9]\" | grep PMC ";
 StrTy pmcid;
 cmd_exec(pmcid,uin,cmd,out,0);
+// 2025-11 these numbers don't work FCK 
+if (false) if (pmcid=="")
+{
+/// new format https://europepmc.org/article/med/9646551 2025-11
+StrTy cmd="sed -e 's;/;\\n;g'| grep \"[0-9]\" | tail -n 1| awk '{print \"pmc\"$0}' ";
+cmd_exec(pmcid,uin,cmd,out,0);
+MM_ERR(MMPR3(cmd,pmcid,uin))
+} // 
+
 // TODO WTHAT THE F this needs to check punt firs tfucj 
 const bool get_anyway= !in.punt_pmc(); // !false;
 MM_ERR(__FUNCTION__<<MMPR2(pmcid,get_anyway))
@@ -368,8 +377,42 @@ return 0;
 }
 
 // What the is this 
- static  IdxTy guessepmc(const InpTy & in , OutTy & out , const IdxTy xflags=0)  { 
+// 2025-10 not working vector to pmc 
+// https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=(EXT_ID:9646551%20AND%20SRC:MED)&format=json&resultType=core
+// https://europepmc.org/article/med/9646551 
+static  IdxTy guessepmc(const InpTy & in , OutTy & out , const IdxTy xflags=0)  { 
 const StrTy nm="guessepmc";
+out.enter(nm);
+const StrTy & uin=in.uin();
+StrTy url=uin+"?javascript_support=no";
+const StrTy temp=out.fn("temp");
+
+const StrTy p1="https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=(EXT_ID:";
+const StrTy p2="%20AND%20SRC:MED)&format=json&resultType=core";
+StrTy pmcid="";
+StrTy cmd="sed -e 's;/;\\n;g'| grep \"[0-9]\" | tail -n 1| awk '{print $0}' ";
+cmd_exec(pmcid,uin,cmd,out,4);
+//const StrTy ufic="sed -e 's;\\(eprint/[^/]*\\).*;\\1;g' ";
+const StrTy ufic=p1+pmcid+p2;
+MM_ERR(MMPR4(cmd,ufic,pmcid,uin))
+// static  IdxTy RecurseIf(const InpTy & in , OutTy & out, const StrTy &uin, const StrTy & nurl ) 
+// this afck fals to lod in fking chrome...
+
+//IdxTy murc=RecurseIf(in,out,url, ufic);
+// this bibtex is fucked up anyway, just do meta(html)
+// % mjmhandler: toobib handlegsmeta(html)
+
+//Grc grc=in.getter().normalget(fntemp,ufic,2048);
+// static  IdxTy handlegsmeta(const InpTy & in , OutTy & out, const IdxTy xflags, const IdxTy flags )
+const IdxTy rc=handlegsmeta(in,out,1,xflags);
+
+//MM_ERR(MMPR2(murc,ufic))
+out.exit(nm);
+return rc; 
+}
+
+static  IdxTy guessepmcold(const InpTy & in , OutTy & out , const IdxTy xflags=0)  { 
+const StrTy nm="guessepmcold";
 out.enter(nm);
 const StrTy & uin=in.uin();
 StrTy url=uin+"?javascript_support=no";
@@ -1045,6 +1088,7 @@ cmd_exec(url,uin,cmdin,out,0);
 url=urli+url+urlf;
 const StrTy fnbib=out.fn("bibtex"); //
 // this moscks up chrome with wget and returns unsupported brower
+// simple stupid 
 // but setting ua in wget to xxx works? 
 //Grc grc=in.getter().normalget(fnbib,url,16);
 Grc grc=in.getter().normalget(fnbib,url,2048);
@@ -3879,6 +3923,37 @@ IdxTy murc=Mutate(in,out,ufic);
 out.exit(nm); return 0;
 } // guessdiscoverac
 
+// AddPair("guessoraoxac",&Myt::guessoraoxac,"//ora\\.ox\\.ac\\.uk/");
+
+ static  IdxTy guessoraoxac(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
+{ 
+const StrTy nm="guessoraoxac";
+out.enter(nm);
+const StrTy & uin=in.uin();
+const StrTy fn=out.fn(); //
+const StrTy fntemp=out.fn("temp"); //
+const StrTy fnbib=out.fn("bibtex"); //
+const IdxTy nstart=out.found();
+const bool all=in.collect_all();
+// 2025-11-08
+// // https://ora.ox.ac.uk/objects/uuid:09a21c6c-535c-4ccb-adc2-573f7b9ea4a2/
+// https://ora.ox.ac.uk/objects/uuid:09a21c6c-535c-4ccb-adc2-573f7b9ea4a2/files/rp2676w878
+const StrTy ufic="sed -e 's;files/.*;;g' ";
+ //static  IdxTy Mutate(const InpTy & in , OutTy & out, const StrTy & cmd ) 
+IdxTy murc=Mutate(in,out,ufic);
+//const StrTy ubase=MutateOnly(uin, ufic,out);
+//const bool eq=(ubase==uin);
+//MM_ERR(MMPR3(nm,eq,uin))
+// let the handlers sort it out... 
+//if (eq){ out.exit(nm); return 0; } 
+
+
+out.exit(nm); return 0;
+} // guessdiscoverac
+
+
+
+
 #if 0 
 // has meta but empty, can probably scrape doi but cool info in json within html
 // https://core.ac.uk/reader/76958504?utm_source=linkout
@@ -5198,6 +5273,16 @@ return 0;
 
 }
 // TODO someone should check the call stack for loops, put is in a map 
+
+ static  IdxTy RecurseIf(const InpTy & in , OutTy & out, const StrTy &uin, const StrTy & nurl ) 
+{ if ((nurl!=uin) &&(nurl.length()!=0))
+{
+IdxTy rcr=Recurse(in,out,nurl);
+return rcr;
+} 
+return 0;
+} // RecurseIf 
+
  static  IdxTy Recurse(const InpTy & in , OutTy & out, const StrTy & nurl ) 
 {
 //MM_MSG(" recursion "<<MMPR2(in.depth(),in.uin()))
