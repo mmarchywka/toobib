@@ -1738,7 +1738,8 @@ const StrTy & uin=in.uin();
 const IdxTy nstart=out.found();
 if (true) 
 {
-const StrTy cmd=("sed -e 's/.*article\\/10/10/' | grep \"^10\" | grep \"/\" "); // doi=, plos
+//const StrTy cmd=("sed -e 's/.*article\\/10/10/' | grep \"^10\" | grep \"/\" "); // doi=, plos
+const StrTy cmd=("sed -e 's/[./]pdf$//' | sed -e 's/.*article\\/10/10/' | grep \"^10\" | grep \"/\" "); // doi=, plos
 const StrTy doi=MutateOnly(uin, cmd,out);
 MM_ERR(MMPR3(uin,doi,cmd))
 if (doi.length()>4 ) {
@@ -1751,7 +1752,7 @@ if (!in.collect_all()) if (nstart!=nnow){ out.exit(nm); return rcx; }
 const StrTy fn=out.fn(); //
 const StrTy fntemp=out.fn("temp"); //
 const StrTy fnbib=out.fn("bibtex"); //
-
+// 2025-11 need to remove a trailing pdf for this to work... 
 //Grc grc=in.getter().normalget(fn,uin,17+128);
 Grc grc=in.getter().headlessget(fntemp,uin,1);
 //StrTy isolatedomain=" sed -e 's;\\([^/]\\)/[^/].*;\\1;'"; // isolatedomain
@@ -2277,7 +2278,10 @@ const StrTy fnbib=out.fn("bibtex"); //
 const IdxTy nstart=out.found();
 // if this is pointing to a pdf, get the summary page...
 const StrTy fnsum=out.fn("temp");
-StrTy u1=MutateOnly(uin, "sed -e 's/.pdf$//' | sed -e 's;/pdf/;/abs/;' ",out);
+// 2025-11-28 https://arxiv.org/html/2411.10177v1 https://arxiv.org/abs/2411.10177v1
+//StrTy u1=MutateOnly(uin, "sed -e 's/.pdf$//' | sed -e 's;/pdf/;/abs/;' ",out);
+StrTy u1=MutateOnly(uin, 
+"sed -e 's/.pdf$//' | sed -e 's;/pdf/;/abs/;'|  sed -e 's/.html$//' | sed -e 's;/html/;/abs/;' ",out);
 if (strncmp(uin.c_str(),"arXiv:",6)==0)
 {
 u1="https://arxiv.org/abs/"+StrTy(uin.c_str()+6);

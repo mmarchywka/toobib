@@ -472,7 +472,8 @@ CmdVec cv;
 // https://www.spiedigitallibrary.org/conference-proceedings-of-spie/2808/1/Progress-in-soft-x-ray-and-UV-photocathodes/10.1117/12.256036.short
 //const StrTy moretermcrap="| sed -e 's/\\/full$//'";
 //const StrTy moretermcrap="| sed -e 's/\\/full$//'| sed -e 's/.short$//'";
-const StrTy moretermcrap="| sed -e 's/[./]full$//'| sed -e 's/[./]short$//'";
+//const StrTy moretermcrap="| sed -e 's/[./]full$//'| sed -e 's/[./]short$//'";
+const StrTy moretermcrap="| sed -e 's/[./]full$//'| sed -e 's/[./]short$//'| sed -e 's/[./]pdf$//'";
 // first observed on citeseer
 const StrTy termcrap="| sed -e 's/[&?].*//'";
 //https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0014707
@@ -534,7 +535,7 @@ if (!in.collect_all()) if (nstart!=nnow) break;
 // noew try doimore... 
 if (doi!=doimore)
 {
-MM_ERR(" doimore detected ")
+MM_ERR(" doimore detected "<< MMPR2(doimore,seen[doimore]))
 ++seen[doimore];
 IdxTy rcx=get_xref(out,in,doimore,nm,0);
 IdxTy nnow=out.found();
