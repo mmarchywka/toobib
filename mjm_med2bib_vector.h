@@ -51,6 +51,7 @@ AddPair("guessgoopat",&Myt::guessgoopat,"patents.google.com/patent");
  AddPair("guessbegel",&Myt::guessbegel,"dl.begellhouse.com"); 
  AddPair("guessaps",&Myt::guessaps,"journals.aps.org"); 
  AddPair("guessfuture",&Myt::guessfuture,"futuremedicine.com"); 
+ AddPair("guessjstagenew",&Myt::guessjstagenew,"jstage.jst.go.jp"); 
  AddPair("guessjstage",&Myt::guessjstage,"jstage.jst.go.jp"); 
  AddPair("guessannrev",&Myt::guessannrev,"annualreviews.org"); 
  AddPair("guesstwente",&Myt::guesstwente,"utwente.nl"); 

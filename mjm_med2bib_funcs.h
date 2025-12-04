@@ -2072,6 +2072,96 @@ v 1720 div 1975 div 1979 div 1999 div 2025 text =
  2086  wget -O xxx.bib -S -v "https://www.jstage.jst.go.jp/AF06S010ShoshJkuDld?sryCd=cpb1958&noVol=33&noIssue=9&kijiCd=33_9_3887&kijiLangKrke=en&kijiToolIdHkwtsh=AT0073&request_locale=EN"
 
 */
+/* 2025-12 apparently its not working now, 
+
+https://www.jstage.jst.go.jp/article/photopolymer/30/1/30_113/_pdf
+https://www.jstage.jst.go.jp/article/photopolymer/30/1/30_113/_article/-char/ja/
+ https://www.jstage.jst.go.jp/article/photopolymer/30/1/30_113/_article/-char/en/
+
+this should also work,  it works with wget from cmd lin lol, 
+https://www.jstage.jst.go.jp/AF06S010ShoshJkuDld?sryCd=photopolymer&noVol=30&noIssue=1&kijiCd=30_113&kijiLangKrke=en&kijiToolIdHkwtsh=AT0073&request_locale=EN
+
+// https://www.jstage.jst.go.jp/AF06S010ShoshJkuDld?sryCd=photopolymernoVol=30&noIssue=1&kijiCd=30_113&kijiLangKrke=en&kijiToolIdHkwtsh=AT0073&request_locale=EN
+
+
+*/
+ static  IdxTy guessjstagenew(const InpTy & in , OutTy & out , const IdxTy xflags=0)
+{ 
+const StrTy nm="guessjstagenew";
+out.enter(nm);
+const StrTy & uin=in.uin();
+const StrTy fn=out.fn(); //
+const StrTy fntemp=out.fn("temp",1); //
+const StrTy fntemp2=out.fn("temp",1); //
+const StrTy fnbib=out.fn("bibtex",1); //
+const IdxTy nstart=out.found();
+//const StrTy & uin=in.uin();
+//StrTy url=MutateOnly(uin, "sed -e 's;/_[a-z].*;/_article/-char/en/;'" ,out);
+//https://www.jstage.jst.go.jp/AF06S010ShoshJkuDld?sryCd=photopolymer&noVol=30&noIssue=1&kijiCd=30_113&kijiLangKrke=en&kijiToolIdHkwtsh=AT0073&request_locale=EN
+
+
+
+
+StrTy uparse=MutateOnly(uin, "sed -e 's;/[/]*; ;g'" ,out);
+Ragged rp;
+rp.load_from_string(uparse);
+MM_ERR(MMPR(rp.dump()))
+const IdxTy sz=rp.size();
+if (sz>0) {  // out.exit(nm); return 0; }  
+const IdxTy len=rp[0].size();
+//https://www.jstage.jst.go.jp/article/photopolymer/30/1/30_113/_pdf
+if (len>=7) { //  out.exit(nm); return 0; }  
+const StrTy v1=rp[0][3];
+const StrTy nvol=rp[0][4];
+const StrTy niss=rp[0][5];
+const StrTy n3=rp[0][6];
+const StrTy uxx="https://www.jstage.jst.go.jp/AF06S010ShoshJkuDld?sryCd="
++ v1+"&noVol="+nvol+"&noIssue="+niss+"&kijiCd="+n3+"&kijiLangKrke=en&kijiToolIdHkwtsh=AT0073&request_locale=EN";
+MM_ERR(MMPR3(nm,uin,uxx))
+// the bibtex returned is invalud there is a space in the name doh 
+// actually its no ascii jap crap fuk
+Grc grc1=in.getter().normalget(fnbib,uxx,1<<11); // 2048
+//IdxTy rc=filter_small_file(fnbib, fntemp, "sed -n '/^@/,//p'", out, 0);
+Blob b;
+b.load(fnbib);
+MM_ERR(MMPR(StrTy(b)))
+// remove non-ascii crap 
+//////////////////////////////////
+StrTy aid;
+// fking space in bibtex name still 
+// another fing hour or two writing fuking garbage code instead of
+// doing research doing stupid fing crap sht fuc
+// marchywka@trixie:/home/documents/cpp/proj/toobib$ echo "@foo x" | sed -n 's/\(@.*\) /\1/gp' 
+
+const StrTy cmdin=" sed -e 's;[^0-9a-zA-Z.,@=/{} ];;g' | sed -e 's/\\(@.*\\) /\\1/g'";
+cmd_exec(aid,fnbib,cmdin,out,2+4); // 4 is no trailing cr lf doh 
+b=aid;
+MM_ERR(MMPR(StrTy(b)))
+b.save(fnbib);
+////////////////////////////////////
+IdxTy rcf= out.good_enough(b,fnbib,in,uxx,nm,0);
+const IdxTy nfound=out.found();
+if (!in.collect_all()) if (nfound!=nstart) { out.exit(nm); return 0; }  
+} //len 
+} //sz
+
+StrTy url=MutateOnly(uin, "sed -e 's;/_[a-z][a-z]*$;/_article/-char/en/;'" ,out);
+if (url!= uin) 
+{
+IdxTy rcc=Recurse(in,out,url);
+const IdxTy nfound=out.found();
+if (!in.collect_all()) if (nfound!=nstart) { out.exit(nm); return 0; }  
+} 
+
+
+
+out.exit(nm);
+
+return 0; 
+
+
+
+} // guessjstagenew
 
 
  static  IdxTy guessjstage(const InpTy & in , OutTy & out , const IdxTy xflags=0)
@@ -2085,7 +2175,8 @@ const StrTy fntemp2=out.fn("temp",1); //
 const StrTy fnbib=out.fn("bibtex",1); //
 const IdxTy nstart=out.found();
 //const StrTy & uin=in.uin();
-StrTy url=MutateOnly(uin, "sed -e 's;/_[a-z].*;/_article/-char/en/;'" ,out);
+//StrTy url=MutateOnly(uin, "sed -e 's;/_[a-z].*;/_article/-char/en/;'" ,out);
+StrTy url=MutateOnly(uin, "sed -e 's;/_[a-z][a-z]*$;/_article/-char/en/;'" ,out);
 // should see if uin=url
 MM_ERR(MMPR3(nm,uin,url))
 Grc grc1=in.getter().normalget(fntemp,url,0);
