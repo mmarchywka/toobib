@@ -158,8 +158,9 @@ typedef typename params_type::var_type var_type;
 //typedef std::vector<CmdParam>  Params;
 CommandInfo(const StrTy &n, const CmdParam p, const bool s,const bool aid) 
 : m_nm(n),m_params(p),add_session(s),add_id(aid) {}
-CommandInfo() : m_nm(),m_params(),add_session(true),add_id(true) {}
-
+//CommandInfo() : m_nm(),m_params(),add_session(true),add_id(true) {}
+CommandInfo() : m_nm(),m_is_string(false),m_params(),add_session(true),add_id(true) {}
+void set_string(const StrTy &s) { m_string=s;m_is_string=true; } 
 StrTy str(const IdxTy id,const StrTy & session) const {Vt zv; return str(id,session,zv); } 
 StrTy str() const {Vt zv; return str(~0,StrTy(),zv); } 
 StrTy str(const IdxTy id,const StrTy & session, const Vt & vars) const
@@ -172,9 +173,9 @@ ss<<"{";
 if (add_session) { ss<<"\"sessionId\":\""+session+"\","; }
 //ss<<"\"method\":\"";
 ss<<"\"method\":\""+m_nm+"\",";
-ss<<"\"params\":{";
-ss<<m_params.str(vars);
-ss<<"}";
+if (!m_is_string){ ss<<"\"params\":{"; ss<<m_params.str(vars); ss<<"}"; }
+else ss<<"\"params\":{\"type\":\""<<m_string<<"\"}";
+//else ss<<"\"type\":\""<<m_string<<"\"";
 // move here? 
 //StrTy jscmd=spfx+"Emulation.setScriptExecutionDisabled\",\"params\":{\"value\":"+StrTy("false")+"},\"id\":";
 //{Ragged r=CmdGet(fi,IdAdd(jscmd),flags); }
@@ -185,6 +186,10 @@ return ss.str();
 } // str
 
 StrTy m_nm;
+// for Page.ReferrerPolicy with string not params
+StrTy m_string;
+bool m_is_string;
+
 params_type  m_params;
 bool add_session;
 bool add_id;
@@ -383,7 +388,8 @@ if (aval.length())
 MM_ERR(" not launching browser as already a listener "<<MMPR2(aval,aval.length()))
 return ~0; 
 }
-StrTy cmd=StrTy("(")+m_bro +StrTy(" 2>&1 | tee /tmp/fifo >/dev/null) ");
+//StrTy cmd=StrTy("(")+m_bro +StrTy(" 2>&1 | tee /tmp/fifo >/dev/null) ");
+StrTy cmd=StrTy("(")+m_bro +StrTy(" 2>&1 | tee bro_log.txt  | tee /tmp/fifo >/dev/null) ");
 MM_ERR(MMPR(cmd))
 tpclass* ptpc = new tpclass();
 tpclass & tpc=*ptpc;
@@ -1120,6 +1126,8 @@ SetDownloadPath(fi,m_download_dir,1);
 // navigate likely just causing a bad request 
 // wrong cross origin fck up doh 
 // this worked in one test case that was slently failing. 
+// after all that it doesn't exist 
+//ExecBroCmd(fi, "refpol",url);
 if (m_use_ref)
 {
 StrTy ref="https://www.google.com"; 
@@ -1759,10 +1767,12 @@ m_use_user_creds=Bit(flags,0); // false;
 m_chrome_with_head=Bit(flags,1);
 m_use_script_as_backup =!Bit(flags,2);
 m_use_ref =!Bit(flags,3);
+m_no_clean=Bit(flags,8);
+if (m_no_clean) mjm_global_flags::mm_delete_temps=!true;
 
 MM_ERR(
 MMPR4(m_mode, m_use_user_creds, m_chrome_with_head, m_use_script_as_backup)
-<<MMPR(m_use_ref)
+<<MMPR2(m_use_ref,m_no_clean)
 )
 
 
@@ -1859,6 +1869,9 @@ else{
 m_options="--headless --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp ";
 //m_options="--headless --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp --run-all-compositor-stages-before-draw --enable-begin-frame-control   --disable-browser-side-navigation ";
 m_options="--headless=new --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp --run-all-compositor-stages-before-draw --enable-begin-frame-control   --disable-browser-side-navigation ";
+
+m_options=headless_base(); // "--headless=new --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp ";
+
 //m_options="--headless --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp --run-all-compositor-stages-before-draw --enable-begin-frame-control  ";
 //m_options="--headless --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --crash-dump-dir=/tmp ";
 
@@ -1905,9 +1918,19 @@ int  n=rand()&127;
 if (n==0) n=1;
 return 9222+n;
 }
+StrTy headless_base() 
+{
+// net::ERR_BLOCKED_... see headless on google  turned out to be refere
+// policy doh 
+return " --headless=new --window-size=1920,1080 --enable-logging=stderr --v=1 --v=1 --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp --run-all-compositor-stages-before-draw --disable-site-isolation-trials --disable-web-security  ";
+//return " --headless=new --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp --run-all-compositor-stages-before-draw --enable-begin-frame-control   --disable-browser-side-navigation ";
+//return "--headless --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp ";
+
+}
 
 void Init()
 {
+m_no_clean=false;
 m_mode=0;
 m_use_script_as_backup=true; 
 m_chrome_with_head= !true; 
@@ -1948,6 +1971,9 @@ m_options=" --start-minimized  --window-size=1920,1080 --enable-logging=stderr -
 else{
 //m_options="--headless --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins  --crash-dump-dir=/tmp ";
 m_options="--headless --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp ";
+
+m_options=headless_base(); 
+
 
 }
 
@@ -2066,7 +2092,7 @@ void Free()
 {
 Kill();
 mysleep(1);
-m_hand.clean();
+if (!m_no_clean) m_hand.clean();
 MM_ERR(" done cleaning hand ")
 if (m_state)
 {
@@ -2159,6 +2185,16 @@ CommandInfo cc=CommandInfo(str, p, includesee,true);
 //m_chrome_cmds[nm]=cc;
 AddBroCmd(nm,cc);
 } // OneParam
+void StringParam(const StrTy& nm, const StrTy& str,const StrTy & s,  const bool includesee=true )
+{
+CmdParam p;
+//p.add(k,v);
+CommandInfo cc=CommandInfo(str, p, includesee,true);
+cc.set_string(s);
+//m_chrome_cmds[nm]=cc;
+AddBroCmd(nm,cc);
+} // StringParam
+
 
 
 
@@ -2167,6 +2203,21 @@ template <class Tv,class Tv2> void TwoParam(const StrTy& nm, const StrTy& str,co
 CmdParam p;
 p.add(k,v);
 p.add(k2,v2);
+CommandInfo cc=CommandInfo(str, p, includesee,true);
+//m_chrome_cmds[nm]=cc;
+AddBroCmd(nm,cc);
+} // TwoParam
+
+
+template <class Tv,class Tv2,class Tv3> void ThreeParam(const StrTy& nm, const StrTy& str,const StrTy & k, const Tv & v, 
+const StrTy & k2, const Tv2& v2, 
+const StrTy & k3, const Tv3& v3, 
+const bool includesee=true )
+{
+CmdParam p;
+p.add(k,v);
+p.add(k2,v2);
+p.add(k3,v3);
 CommandInfo cc=CommandInfo(str, p, includesee,true);
 //m_chrome_cmds[nm]=cc;
 AddBroCmd(nm,cc);
@@ -2197,13 +2248,15 @@ CmdParam v;
 v.add("sec-ch-ua",StrTy("\"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\", \"Not-A.Brand\";v=\"99\""));
 v.add("sec-ch-ua-mobile",StrTy("\"?0\""));
 v.add("sec-ch-ua-platform",StrTy("\"Linux\""));
-v.add("Referer",StrTy("https://www.google.com/search?q=referer+header&ie=UTF-8"));
+const bool refer_policy_ok=false;
+if (refer_policy_ok) 
+	v.add("Referer",StrTy("https://www.google.com/search?q=referer+header&ie=UTF-8"));
 CmdParam p;
 p.add("headers",v);
 CommandInfo cc=CommandInfo("Network.setExtraHTTPHeaders", p, true,true);
 //m_chrome_cmds[nm]=cc;
 AddBroCmd(nm,cc);
-} // NoParam
+} // MissingHeaders 
 
 
 
@@ -2248,6 +2301,7 @@ CommandInfo cc=CommandInfo("Input.dispatchMouseEvent", p, true,true);
 AddBroCmd("mouse_moved",cc);
 }
 
+StringParam("refpol","Page.ReferrerPolicy","unsafeUrl");
 NoParam("get_outer","DOM.getOuterHTML");
 OneParam("get_outer_node","DOM.getOuterHTML","nodeId",StrTy("#1."));
 OneParam("get_outer_one","DOM.getOuterHTML","nodeId",1U);
@@ -2259,7 +2313,8 @@ OneParam("create_target","Target.createTarget","url",StrTy(""));
 // probably does not exist
 OneParam("enable_frame_control","Emulation.setBeginFrameControlEnabled","enabled",true);
 OneParam("navigate","Page.navigate","url",StrTy("#1"));
-TwoParam("navigateref","Page.navigate","url",StrTy("#1"),"referrer",StrTy("#2"));
+//TwoParam("navigateref","Page.navigate","url",StrTy("#1"),"referrer",StrTy("#2"));
+ThreeParam("navigateref","Page.navigate","url",StrTy("#1"),"referrer",StrTy("#2"),"referrerPolicy",StrTy("unsafeUrl"));
 
 TwoParam("attach","Target.attachToTarget","targetId",StrTy("#1"),"flatten",true,false);
 
@@ -2304,6 +2359,7 @@ bool m_use_user_creds;
 bool  m_chrome_with_head; 
 bool  m_use_script_as_backup; 
 bool m_use_ref;
+bool m_no_clean;
 StrTy m_target,m_session;
 }; // mjm_chromate
 
