@@ -578,6 +578,7 @@ out.enter(nm);
 const StrTy fn=out.fn(); //
 if (out.only(nm,in,"normalget")) { out.exit(nm);  return ~0; } 
 const IdxTy nstart=out.found();
+// 16 flag only get if missing... 
 Grc grc=in.getter().normalget(fn,in.uin(),16);
 //std::vector<StrTy> v;
 // if this is pdf, use pdftotext -layout FIRST lol. 
@@ -5005,7 +5006,7 @@ StrTy x;
 // overwrite the normal get file...
 // this should now be print-to-pdf with bit zero of the flags clear
 Grc grc=in.getter().headlessget(fn,uin,0);
-
+MM_MSG(" trying to recurse with rendered  version")
 // TODO FIXME This can now recurse with the file as the url... 
 IdxTy rt=Recurse(in,out,fn);
 

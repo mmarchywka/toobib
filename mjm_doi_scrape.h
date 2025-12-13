@@ -118,13 +118,14 @@ Do not use various deefined methods or handlers yet.
 
 */
 
-
+// API 
 public:
 typedef std::vector<Scraping> scraped_vector;
 
 typedef AccessTy result_code;
 mjm_doi_scrape() {Init();}
 mjm_doi_scrape(const Ragged & r) {Init(r); }
+void gate_out_refs(const bool x) { m_gate_out_refs=x; } 
 StrTy dump(const IdxTy flags=0) { return Dump(flags); }
 
 template <class Td> AccessTy scrape_url(Td & v, const StrTy & url, const IdxTy flags)
@@ -139,7 +140,11 @@ template <class Td> AccessTy scrape_blob(Td & v, const Blob & b, const IdxTy fla
 template <class Td> AccessTy scrape_bin_thing(Td & v, const StrTy & pfx, const Blob & b,const StrTy & type,  const IdxTy flags)
 { return ScrapeBinThing(v,pfx,b,type,flags); } 
 template <class Td> AccessTy scrape_bin_file(Td & v, const StrTy & fn,const StrTy & type,  const IdxTy flags)
-{ return ScrapeBinThing(v,CatPipe(fn),Blob(),type,flags); } 
+{ 
+Blob b;
+b.load(fn);
+//return ScrapeBinThing(v,CatPipe(fn),Blob(),type,flags); } 
+return ScrapeBinThing(v,CatPipe(fn),b,type,flags); } 
 
 
 template <class Td> AccessTy scrape_bin_blob(Td & v,  const Blob & b,const StrTy & type,  const IdxTy flags)
@@ -163,19 +168,28 @@ void ExitSerial(const IdxTy i)const  {  m_mutex_vector.exit_serial(i ); }
 template <class Td> AccessTy SortScrapes(Td & v, const StrTy & pfx, const Blob & b,  const IdxTy flags)
 {
 AccessTy rc=0;
+IdxTy liimit=0;
 Td vout;
 StrTy abs=StrTy(b);
+// section header... 
+// gate out reference doi's 
+liimit=StrUtil::indexOf(abs.c_str(),"#reference");
+if (liimit== ~0 ) liimit=0;
+if (!m_gate_out_refs) liimit=0;
 const IdxTy vs=v.size();
 std::vector<int> vidx(vs);
 IdxTy idx=0;
+MM_ERR(" searching "<<MMPR2(abs.length(),b.size()))
 MM_LOOP(ii,v)
 {
+// these have a trailing quote doh 
 IdxTy loc=StrUtil::indexOf(abs.c_str(),(*ii).c_str());
 MM_ERR(MMPR3(loc,idx,(*ii).c_str()))
 vidx[idx]=loc;
 ++idx;
 }
-MM_ERR(" sort the ")
+MM_ERR(" sort the "<<MMPR2(vs,idx))
+
 // cant believe c__ does not have permutation order sort 
 // https://stackoverflow.com/questions/17554242/how-to-obtain-the-index-permutation-after-the-sorting
 std::vector<int> index(vidx.size());
@@ -191,13 +205,18 @@ MM_ERR(" done with sort")
 MM_LOOP(ii,index)
 {
 MM_ERR(" "<<MMPR2(idx,(*ii)))
+if (liimit!=0) if(vidx[*ii]>liimit)
+{
+MM_ERR("limiting size "<<MMPR4(idx,liimit, vidx[*ii],(*ii)))
+break;
+} // 
 vout.push_back(v[(*ii)]); 
 MM_ERR(MMPR3(idx,StrTy(vout.back()),(*ii)))
 ++idx;
 }
 MM_ERR(" done with pushing  sort")
 
-MM_ERR(" sorting "<<MMPR2(v.size(),abs.length()))
+MM_ERR(" sorting "<<MMPR3(v.size(),vout.size(),abs.length()))
 
 v=vout;
 MM_ERR(" done with voit assign"  )
@@ -229,8 +248,9 @@ return rc;
 template <class Td> AccessTy ScrapeBlob(Td & v, const StrTy & pfx, const Blob & b, const IdxTy flags)
 {
 std::vector<StrTy> methods;
-methods.push_back(m_ddoi);
+// look at meta data first to avoid reference doi's 
 methods.push_back(m_mdoi);
+methods.push_back(m_ddoi);
 methods.push_back(m_tdoi);
 methods.push_back(m_hdoi);
 methods.push_back(m_arxiv);
@@ -257,8 +277,12 @@ MM_LOOP(ii,methods)
 {
 rc=ScrapeBlob(v,pfx,b,(*ii),flags);
 MM_ERR(" in scrape list "<<MMPR2(v.size(),(*ii)))
-if (first_result_only) if (v.size()) return rc;
+if (first_result_only) if (v.size()) {
+//MM_ERR("found one doi only "<<MMPR(v[0]))
+ return rc;
+}
 } // ii 
+
 // now sort by order of occurence, although this relies on html order... 
 SortScrapes(v,pfx,b,flags);
 return rc;
@@ -324,7 +348,7 @@ MM_ERR(" scraping file "<<MMPR2(fn,pfx))
 // the sorter now needs the blod loaded
 Blob b;
 b.load(fn);
-
+MM_ERR(" scrape blob size "<<MMPR3(b.size(),StrTy(b).length(),fn))
 //return ScrapeBlob(v,pfx,Blob(),flags);
 return ScrapeBlob(v,pfx,b,flags);
 // turn lines into strings 
@@ -440,11 +464,16 @@ canhandle=`cat "$fn" | grep -i "doi=" | sed -e 's/doi=/\ndoi /gi' | sed -e 's/[<
 
 
 void Init() { 
+
+ m_gate_out_refs=!false;
 //m_isolate_10=" grep 10 | perl -pe 's/.*?10/10/' | sed -e 's/ /\\n/g' | grep \"10\\.\"";
-m_isolate_10=" grep 10 | perl -pe 's/.*?10\\./10./' | sed -e 's/ /\\n/g' | grep \"10\\.\"";
+//m_isolate_10=" grep 10 | perl -pe 's/.*?10\\./10./' | sed -e 's/ /\\n/g' | grep \"10\\.\"";
+// 2025-12 have trailing quote wtf? should still be ok ... 
+m_isolate_10=" grep 10 | perl -pe 's/.*?10\\./10./' | sed -e 's/ /\\n/g' | grep \"10\\.\" | sed -e 's/\"//g'  " ;
 // doised2() { sed -e 's/[^-()/a-zA-Z_0-9.].*//' }
 //m_doised2=" doised2() { sed -e 's/[^-()/a-zA-Z_0-9.].*//' }";
-m_doised2="  sed -e 's/[^-()/a-zA-Z_0-9.].*//' ";
+//m_doised2="  sed -e 's/[^-()/a-zA-Z_0-9.].*//' ";
+m_doised2="  sed -e 's/[^-()/:a-zA-Z_0-9.].*//' ";
 // doifromutl
 //m_udoi="strings -n 1 |  sed -e 's/.*\\(\\/10\\.[0-9][0-9]*\\/[^;&?#]*\\).*/\\1/' | grep -v \"^http://\\|^https://\"  | sed -e 's/\\/full$//'| sed -e 's/^\\///'"; 
 m_udoi="strings -n 1 |  sed -e 's/.*\\(\\/10\\.[0-9][0-9]*\\/[^;&?#]*\\).*/\\1/' | grep -v \"^http://\\|^https://\"  | sed -e 's/[\\/.]pdf[?].*//' | sed -e 's/[\\/.]pdf$//' |  sed -e 's/\\/full$//'| sed -e 's/^\\///'"; 
@@ -452,6 +481,7 @@ m_udoi="strings -n 1 |  sed -e 's/.*\\(\\/10\\.[0-9][0-9]*\\/[^;&?#]*\\).*/\\1/'
 //m_mdoi=def_doised2+ "; sed -e 's/<meta name=/\\n<meta name=/g' | sed -e 's/[}>]/&\\n/g' | grep -a  citation_doi | sed -e 's/.*content=\"//' | sed -e 's/\".*//' |doised2 | sed -e 's/ .*//g'| grep 10 | head -n 1";
 //m_mdoi= "strings -n 1 |  sed -e 's/<meta name=/\\n<meta name=/g' | sed -e 's/[}>]/&\\n/g' | grep -a  citation_doi | sed -e 's/.*content=\"//' | sed -e 's/\".*//' |"+m_doised2+" | sed -e 's/ .*//g'| grep 10 | head -n 1";
 m_ddoi= "strings -n 1 |  sed -e 's/http/\\nhttp/ig' | sed -e 's/[)}>]/\\n/g' | grep -a  doi\\.org | sed -e 's/.*doi.org.//' | sed -e 's/\".*//' |"+m_doised2+" | sed -e 's/ .*//g'| "+m_isolate_10+ "| head -n 1";
+// content="English"/> <meta name="citation_doi" content="10.5555/uri:pii:0039606086902928"/> <
 m_mdoi= "strings -n 1 |  sed -e 's/<meta name=/\\n<meta name=/g' | sed -e 's/[}>]/&\\n/g' | grep -a  citation_doi | sed -e 's/.*content=\"//' | sed -e 's/\".*//' |"+m_doised2+" | sed -e 's/ .*//g'| "+m_isolate_10+ "| head -n 1";
 // doisfromtext 
 //m_tdoi="grep -a -i \"doi[=:]\"  | sed -e 's/.*doi[:=]/\\ndoi=/gi' | sed -e 's/[\"]//g'| sed -e \"s/'//g\" |  sed -e 's/[^/()0-9a-zA-Z.=% -].*/\\n/g'  |  grep \"^doi=\" | sed -e 's/doi=//i'  |  awk '{print $1}'  | head -n 1";
@@ -477,6 +507,7 @@ Tdb m_config;
 StrTy m_hdoi,m_tdoi,m_mdoi,m_ddoi,m_udoi,m_arxiv;
 StrTy m_isolate_10;
 StrTy m_doised2;
+bool m_gate_out_refs;
 
 }; // mjm_doi_scrape
 

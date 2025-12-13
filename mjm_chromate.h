@@ -157,7 +157,7 @@ typedef typename params_type::var_type Vt;
 typedef typename params_type::var_type var_type;
 //typedef std::vector<CmdParam>  Params;
 CommandInfo(const StrTy &n, const CmdParam p, const bool s,const bool aid) 
-: m_nm(n),m_params(p),add_session(s),add_id(aid) {}
+: m_nm(n),m_is_string(false),m_params(p),add_session(s),add_id(aid) {}
 //CommandInfo() : m_nm(),m_params(),add_session(true),add_id(true) {}
 CommandInfo() : m_nm(),m_is_string(false),m_params(),add_session(true),add_id(true) {}
 void set_string(const StrTy &s) { m_string=s;m_is_string=true; } 
@@ -277,7 +277,8 @@ if (m_threw) { MM_ERR(" already threew ") return FetchInfo(); }
 try{ 
 return Fetch(url,flags);
 } catch (FetchInfo fi) {m_threw=true;  MM_ERR(" fetch threw "<<MMPR(fi.dump())) return fi; } 
-
+// unreachable? 
+return FetchInfo(); 
 }
 
 fetch_info save(const StrTy & fn, const StrTy & url, const IdxTy flags)
@@ -301,7 +302,8 @@ fetch_info download(const StrTy & fn,const StrTy & url, const IdxTy flags)
 { return Download(fn,url,flags);}
 // this will wait a long time if server fails but should wait for downlaod
 fetch_info wget(const StrTy & fn,const StrTy & url,const IdxTy flags) 
-{ return Download(fn,url,1);}
+// 2025- add or of flgs not just 1 
+{ return Download(fn,url,flags|1);}
 // int in seconds lol but scales for perforenacne 
 void mysleep(const IdxTy n) const { const IdxTy tc=1000000>>2; usleep(n*tc); }
 
@@ -1131,7 +1133,7 @@ SetDownloadPath(fi,m_download_dir,1);
 if (m_use_ref)
 {
 StrTy ref="https://www.google.com"; 
-MM_MSG(" vavigating with ref "<<MMPR2(url,ref))
+MM_ERR(" vavigating with ref "<<MMPR2(url,ref))
 ExecBroCmd(fi, "navigateref",url,ref);
 }
 else { ExecBroCmd(fi, "navigate",url); }
@@ -1272,6 +1274,14 @@ file=Exec("basename \""+fn+"\"");
 MM_ERR(MMPR4(__FUNCTION__,fn,base,file))
 return fn;
 }
+void Split(StrTy & base, StrTy & file, const StrTy & fn)
+{
+base=Exec("dirname \""+fn+"\"");
+file=Exec("basename \""+fn+"\"");
+MM_ERR(MMPR4(__FUNCTION__,fn,base,file))
+} // Split
+
+// fn is supposed to be a file name not a path 
 fetch_info Download(const StrTy & fn, const StrTy & url, const IdxTy flags) 
 {
  
@@ -1324,8 +1334,11 @@ MM_ERR(MMPR2(__FUNCTION__,m_download_dir))
 dw.watch(m_download_dir,0);
 const bool use_blank=false;
 Ragged r;
+StrTy fndir,fnfile;
+Split(fndir,fnfile,fn);
 //r=CmdGet(fi,IdAdd(use_blank?nocmd:nocmd2),flags);
-r=CmdGet(fi,IdAdd(GetDownloadString(fn,url,use_blank?1:0)),0);
+//r=CmdGet(fi,IdAdd(GetDownloadString(fn,url,use_blank?1:0)),0);
+r=CmdGet(fi,IdAdd(GetDownloadString(fnfile,url,use_blank?1:0)),0);
 // fck not working now... 
 //sleep(5);
 // doh possible problem?
@@ -1347,7 +1360,7 @@ if (fix_output_location)
 // first wait for file to appear
 IdxTy nmax=100;
 IdxTy niter=0;
-MM_MSG(" waiting for download no failure detect "<<MMPR2(url,fn))
+MM_ERR(" waiting for download no failure detect "<<MMPR2(url,fn))
 while (true)
 {
 StrTy output=m_wscat.drain(1,0,0);
@@ -2541,7 +2554,8 @@ else if (cmd=="mode") { x.use_user("",atoi(cip.p1.c_str())); }
 else if (cmd=="launch") { x.launch(); }
 else if (cmd=="preserve") { mjm_global_flags::mm_delete_temps=!true; }
 // great so where does it put it? Only zzzz
-else if (cmd=="fetch") { x.fetch(cip.p1,0); }
+// returns fi info zzzz is a debug side effect 
+else if (cmd=="fetch") { auto fi=x.fetch(cip.p1,0); MM_ERR(MMPR(fi.dump())) }
 else if (cmd=="save") { x.save(cip.p1,cip.p2,0); }
 // fn,url
 else if (cmd=="download") { x.download(cip.p1,cip.p2,0); }

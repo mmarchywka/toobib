@@ -94,6 +94,7 @@ typedef std::map<StrTy, StrTy> HdrMap;
 mjm_try_n_get() {Init();}
 mjm_try_n_get(const Ragged &r ) {Init(); Init(r);}
 ~mjm_try_n_get() {}
+void msg_flags(const bool x) { m_msg_flags=x; }
 void set_chromate_launch_flags(const IdxTy f) { m_chromate_use_flags=f; }
 
 IdxTy configure(RaggedCursor & rc ) { return Init(rc); } 
@@ -223,6 +224,8 @@ MM_ERR(__FUNCTION__<<MMPR2(dest,StrTy(url)))
 MM_ERR(__FUNCTION__<<MMPR2(dest,(url)))
 Fi fi=m_chromate.wget(dest,url,0);
 // fi.doc has some json head and tail junk
+if (m_msg_flags) 
+	{ MM_MSG(" chromate wget download "<<MMPR4(dest,url,fi.error,flags)) }
 if ((fi.error.length()!=0)) { 
 MM_ERR(MMPR(fi.error))
 rc=1; return rc; } 
@@ -256,19 +259,39 @@ typedef typename Chromate::fetch_info Fi;
 m_chromate.use_user(StrTy(),m_chromate_use_flags);
 m_chromate.launch();
 Remove(dest);
-Fi fi=dump_dom? m_chromate.fetch(url,0):m_chromate.print_page(dest,url,flags);
+// 2025-12-12 fi never used?  REvert back see if fi contains good info from
+// fetch but download does not. 
+// preserve original use of fetch to keep this consistent
+// but want guesses to try download first.. 
+// fetch is working but returns a challenge screen 
+// but download can fail letting wget really work ... wtf 
+const bool save_fi=true;
+//Fi fi=dump_dom? m_chromate.fetch(url,0):m_chromate.print_page(dest,url,flags);
+Fi fi=dump_dom?  (save_fi?m_chromate.fetch(url,0): m_chromate.download(dest,url,1)) :m_chromate.print_page(dest,url,flags);
+if (m_msg_flags){ MM_MSG(" chromate download "<<MMPR4(dump_dom,dest,url,flags))}
+{ MM_ERR(" chromate download "<<MMPR4(dump_dom,dest,url,flags))}
+// with zero flags this just leaves it in wherever it went 
+// dest is a FULL PATH but download wants a FILE name.. 
+//Fi fi=dump_dom? m_chromate.download(dest,url,0):m_chromate.print_page(dest,url,flags);
 // fi.doc has some json head and tail junk
 if ((fi.error.length()!=0)) {
-MM_ERR(" getting DOM with chromate failed "<<MMPR3(fi.error,dest,StrTy(url)))
+MM_ERR(" getting with chromate failed "<<MMPR3(fi.error,dest,StrTy(url)))
+if(m_msg_flags) { MM_MSG(" getting  with chromate failed "<<MMPR3(fi.error,dest,StrTy(url))) }
  rc=1; return rc; } 
 if (dump_dom&&(fi.error.length()==0))
 {
 Blob b;
 b=fi.doc;
-b.save(dest);
+if(save_fi) if( fi.doc.length()) b.save(dest);
+// download may not return doc but hopefullyu fetch does... 
+// download uses fi to collct info probably ... 
+if (!save_fi) if(m_msg_flags) { MM_MSG(" dropped dubsious save   "<<MMPR3(fi.doc.length(),dest,StrTy(url))) }
 }
 // wtf???? 
-WaitFile(dest);
+MM_ERR(" 2025-12 stop nonsense wiat ...")
+if (!dump_dom) WaitFile(dest);
+
+
 //MM_ERR(MMPR(cmd))
 //IdxTy c=m_hand.fileio(out,err,data,cmd,3);
 //MM_ERR(MMPR(StrTy(err)));
@@ -329,7 +352,7 @@ else cmd= bro+ base+"\""+dest+"\" --print-to-pdf=\""+dest+"\" \""+StrTy(url)+"\"
 //if (dump_dom) cmd= bro+ " --headless --dump-dom \""+url+"\" | tee \""+dest+"\"";  
 //else cmd= bro+ " --headless --print-to-pdf=\""+dest+"\" \""+url+"\"";  
 
-
+if (m_msg_flags) { MM_MSG(" unattached  headless chrome start "<<MMPR4(url,dest,dump_dom,cmd)) }
 MM_ERR(MMPR(cmd))
 IdxTy c=m_hand.fileio(out,err,data,cmd,3);
 MM_ERR(MMPR(StrTy(err)));
@@ -457,6 +480,7 @@ typedef typename Chromate::fetch_info Fi;
 m_chromate.use_user(StrTy(),m_chromate_use_flags);
 m_chromate.launch();
 // the print may be asynchronous.. 
+if(m_msg_flags) { MM_MSG(" chromate fetch "<<MMPR4(dump_dom,url,dest,flags))}
 Fi fi=dump_dom? m_chromate.fetch(url,0):m_chromate.print_page(dest,url,flags);
 Blob out;
 out=fi.doc;
@@ -607,6 +631,8 @@ const bool stupid_simple=Bit(flags,11); // use user-agent in  for app simple
 const bool use_ua=bro_ua;
 const bool use_acc=bro_acc||bib_acc;
 MM_ERR(MMPR4(flags,use_ua,me_ua,bro_ua)<<MMPR(stupid_simple))
+if (m_msg_flags) { MM_MSG(" really using wget "<<MMPR4(flags,use_ua,me_ua,bro_ua)<<MMPR(stupid_simple)) }
+
 if (only_if_missing)
 {
 const bool exists=Exists(dest);
@@ -799,6 +825,7 @@ return rc;
 //IdxTy c=m_hand.fileio(dest,err,data,cmd);
 void Init()
 {
+m_msg_flags=false;
 //m_chromate_creds=false;
 m_chromate_use_flags=0;
 m_cookie_file="crapcookie.txt";
@@ -858,6 +885,7 @@ return 0;
 
 } 
 // MEMBERS
+bool m_msg_flags;
 MemMap m_map;
 MemVecMap m_vec_map;
 mutable Hand m_hand;

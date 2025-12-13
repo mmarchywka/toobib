@@ -1104,9 +1104,18 @@ if (!keep_going) if(out.found()||out.defer()) break;
 } // had
 }// ii
 } // skip_guesses
+/*
+https://www.surgjournal.com/article/0039-6060(86)90292-8/abstract
+In headed mode, it seems to return something that only works when
+it, not the original link, rendered to pdf by chrome.
+Inheadless mode, fetch just gets the challenge screen but
+the real wget appears to work but then the doi is extracted
+before the citatioh meta data. 
 
+*/
 if (!keep_going) skip_handlers|=(out.found()||out.defer());
 if (!skip_handlers) { //  return rc; 
+in.getter().msg_flags(true);
 // handlers will rely on a normalget except
 // for a few like headless or variants 
 const StrTy fn=out.fn("normalget"); // in.ZZ
@@ -1135,22 +1144,31 @@ const IdxTy htmlfake=in.getter().embedded_etc(fn,0);
 bool headless_failed=(fnsz<100)||(IdxTy(grc)!=0)||(htmlfake!=0);
 MM_ERR(" handler get "<<MMPR4(headless_failed,fnsz,fn,StrTy(in.uin())))
 if (headless_failed) 
-MM_MSG(" handler get failed  "<<MMPR4(headless_failed,fnsz,fn,StrTy(in.uin())<<MMPR(htmlfake)))
-
+MM_ERR(" handler get failed  "<<MMPR4(headless_failed,fnsz,fn,StrTy(in.uin())<<MMPR(htmlfake)))
+//
+MM_MSG(" headlessget "<<MMPR(headless_failed) << MMPR4(fn,fnsz,in.uin(),htmlfake))
 if (headless_failed)
 {
+// this is what the above now did lol except for the "1" bit  
 MM_ERRF(" trying new chromate download  "<<MMPR2(fn,StrTy(in.uin())))
 in.getter().clear(fn,0);
+// this uses chromate wget feature
 Grc grc=in.getter().headlessdownload(fn,in.uin(),16+(show_trial?32:0));
 const IdxTy fnsz=in.getter().size(fn,0);
 headless_failed=(fnsz<1)||(IdxTy(grc)!=0);
 if (headless_failed) 
-MM_MSG(" handler download  failed  "<<MMPR4(headless_failed,fnsz,fn,StrTy(in.uin())))
+MM_ERR(" handler download  failed  "<<MMPR4(headless_failed,fnsz,fn,StrTy(in.uin())))
+MM_MSG(" attempted headlessdownload  "<<MMPR4(headless_failed,fnsz,fn,in.uin()))
 
 } 
 
-if (headless_failed)
+//if (headless_failed)
 {
+Blob b;
+b.load(fn);
+const IdxTy fnsz1=in.getter().size(fn,0);
+MM_MSG(" using wget for test  ")
+MM_MSG(" using wget lol ")
 MM_ERRF(" trying wget fall back "<<MMPR2(fn,StrTy(in.uin())))
 // headless fails on pdf, but wget is being blocked but
 // now chromate download works but names are a trick.. 
@@ -1158,10 +1176,16 @@ MM_ERRF(" trying wget fall back "<<MMPR2(fn,StrTy(in.uin())))
 in.getter().clear(fn,0);
 Grc grc=in.getter().normalget(fn,in.uin(),16+(show_trial?32:0));
 const IdxTy fnsz2=in.getter().size(fn,0);
+if (fnsz2<fnsz1) b.save(fn);
+b.load(fn);
+b.save("zzzz2");
+MM_MSG(" check wget "<<MMPR3(in.uin(),fnsz1,fnsz2))
+MM_ERR(" check wget "<<MMPR3(in.uin(),fnsz1,fnsz2))
 MM_ERR(" handler wget "<<MMPR4(headless_failed,fnsz2,fn,StrTy(in.uin())))
-MM_MSG(" last chance  handler wget "<<MMPR4(headless_failed,fnsz2,fn,StrTy(in.uin())))
+MM_ERR(" last chance  handler wget "<<MMPR4(headless_failed,fnsz2,fn,StrTy(in.uin())))
 
 } // headless_failed
+in.getter().msg_flags(!true);
 
 MM_LOOP(ii,m_handlers)
 {

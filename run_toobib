@@ -9,7 +9,7 @@ MAINDEF="TEST_toobib__"
 
 LINK="$MMCD_LINK -lxml2 -lpthread"
 
-NEWF=" -Wno-unused-but-set-variable "
+NEWF=" -Wall -Wno-unused-but-set-variable "
 
 #COMPILER="$MMCD_COMPILER $NEWF "
 COMPILER="$MMCD_COMPILER "
@@ -87,6 +87,13 @@ shift
 fi
 
 if [ "$1" == "-push_to_git" ]
+then
+#shift
+push_to_git
+shift
+fi
+
+if [ "$1" == "-push-to-git" ]
 then
 #shift
 push_to_git
