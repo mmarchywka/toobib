@@ -1274,10 +1274,28 @@ file=Exec("basename \""+fn+"\"");
 MM_ERR(MMPR4(__FUNCTION__,fn,base,file))
 return fn;
 }
+void StupidCrLf(StrTy & s)
+{
+const IdxTy n=s.length();
+char * p= new char[n+1];
+const char * sp=s.c_str();
+IdxTy i=0;
+IdxTy j=0;
+while (sp[i]!=0) { 
+if (sp[i]!='\r') if (sp[i]!='\n') { p[j]=sp[i]; ++j; } 
+++i;
+}// while 
+p[j]=0;
+s=p;
+delete[] p;
+} // Stupid CrLf
+
 void Split(StrTy & base, StrTy & file, const StrTy & fn)
 {
 base=Exec("dirname \""+fn+"\"");
 file=Exec("basename \""+fn+"\"");
+StupidCrLf(base);
+StupidCrLf(file);
 MM_ERR(MMPR4(__FUNCTION__,fn,base,file))
 } // Split
 
