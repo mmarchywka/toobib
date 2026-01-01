@@ -7,6 +7,11 @@ AddPair("guesscell",&Myt::guesscell,"=www.cell.com");
  AddPair("guesspmceuro",&Myt::guesspmceuro,"europepmc.org.*PMC/[0-9]"); 
 // 2025-11 https://www.gastrojournal.org/article/0016-5085(92)90777-V/pdf
  AddPair("guessgastro",&Myt::guessgastro,"gastrojournal\\.org/"); 
+// 2026-01-01
+// https://espace.library.uq.edu.au/data/UQ_317200/UQ317200_OA.pdf?dsi_version=56475d25961570a57a91b4c095107731&Expires=1767380407&Key-Pair-Id=APKAJKNBJ4MJBJNC6NLQ&Signature=SvppIlLM4wavU3aKl00l4W9cKRQpH9yZ-QAUZl14c4k0KexVG5NFlBR8aID2XQb6mY3aHhCEgsfwS9BYBGFoo8YL1pGoErpl7ceVphiYhwwXBBZScbigRoUSjzZ8Eu~ktIgSb7aG85kKehsuxMBmfxUKq-DjPPJ5wO~rQ6cxRhsYxTRg6-zBY4Zq~CZlhsNtNgYD5yJLJUeSD~-XXDwC61HQJ7ZhXAbav-lsuLJh151L9ohgLzLoWwFWdU5NhkMNDiqhM8yHLA--ZElaQRaMvcZfP1Ks30X6a3jFYeiR8PfnTazpm6Uplm~0Gop9jluuPxDPxaOwgywIlxpVKzpq4A__
+// https://espace.library.uq.edu.au/view/UQ:317200
+ AddPair("guessuqespace",&Myt::guessuqespace,"library\\.uq\\.edu\\.au/"); 
+
 // 2025-11 pmc numbers don't work fck 
  AddPair("guessepmc",&Myt::guessepmc,"europepmc.org"); 
 // AddPair("guessepmc",&Myt::guesspmc,"europepmc.org"); 

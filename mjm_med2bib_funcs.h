@@ -708,6 +708,41 @@ return 0;
 
 } // guessbonndoc
 
+// 2026-01-01
+// https://espace.library.uq.edu.au/data/UQ_317200/UQ317200_OA.pdf?dsi_version=56475d25961570a57a91b4c095107731&Expires=1767380407&Key-Pair-Id=APKAJKNBJ4MJBJNC6NLQ&Signature=SvppIlLM4wavU3aKl00l4W9cKRQpH9yZ-QAUZl14c4k0KexVG5NFlBR8aID2XQb6mY3aHhCEgsfwS9BYBGFoo8YL1pGoErpl7ceVphiYhwwXBBZScbigRoUSjzZ8Eu~ktIgSb7aG85kKehsuxMBmfxUKq-DjPPJ5wO~rQ6cxRhsYxTRg6-zBY4Zq~CZlhsNtNgYD5yJLJUeSD~-XXDwC61HQJ7ZhXAbav-lsuLJh151L9ohgLzLoWwFWdU5NhkMNDiqhM8yHLA--ZElaQRaMvcZfP1Ks30X6a3jFYeiR8PfnTazpm6Uplm~0Gop9jluuPxDPxaOwgywIlxpVKzpq4A__
+// https://espace.library.uq.edu.au/view/UQ:317200
+// AddPair("guessuqespace",&Myt::guessuqespace,"library\\.uq\\.edu\\.au/");
+
+ static  IdxTy guessuqespace(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
+{
+const StrTy nm="guessuqespace";
+out.enter(nm);
+const StrTy & uin=in.uin();
+StrTy url="";
+const StrTy fn=out.fn(); //
+const StrTy fntemp=out.fn("temp"); //
+const StrTy fnbib=out.fn("bibtex"); //
+const IdxTy nstart=out.found();
+const StrTy _nurl=MutateOnly(uin, "grep data|sed -e \'s;.*UQ_;;\'| sed -e 's;/.*;;g' " ,out );
+const StrTy nurl="https://espace.library.uq.edu.au/view/UQ:"+_nurl;
+MM_ERR(MMPR4(nm,uin,nurl,_nurl))
+if ((nurl!=uin)&&( _nurl.length()!=0))
+{
+//InpTy in2(in,nurl);
+IdxTy rcr=Recurse(in,out,nurl);
+//OutTy out2(out,nurl);
+//IdxTy rc=handlehasbib(in2,out2,xflags); // in.mom()->Guess(in2,out2,in.rflags());
+MM_ERR(" return from recurions .. "<<MMPR2(rcr,nurl))
+//MM_MSG(MMPR(out2.found()))
+//out.adopt(out2);
+}
+out.exit(nm);
+return 0;
+
+
+} // guessuqespace
+
+
 // 2025-05-27 https://dblp.org/rec/conf/pics/Leubner99.html?view=bibtex
 //https://www.imaging.org/common/uploaded%20files/pdfs/Papers/1999/PICS-0-42/977.pdf
 
