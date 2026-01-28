@@ -147,6 +147,32 @@ out.exit(nm);
 return 0;
 }
 // guessdoi
+// https://www.cell.com/action/downloadCitationSecure?objectUri=pii:S0166223600020312&direct=true&include=cit&submit=Export&downloadFileName=foodoo
+//https://www.cell.com/trends/neurosciences/abstract/S0166-2236(00)02031-2?code\u003dcell-site=
+ static  IdxTy guesscellnew(const InpTy & in , OutTy & out , const IdxTy xflags =0  )  { 
+const StrTy nm="guessscell";
+out.enter(nm);
+const StrTy & uin=in.uin();
+// don't remutate...
+StrTy pii=MutateOnly(uin, "grep -v Citation | sed -e 's;.*/S;/S;' |sed -e 's;?.*;;' | sed -e 's/[^0-9S]//g' " ,out );
+MM_MSG(MMPR3(__FUNCTION__,pii,uin))
+if (pii!="")
+{
+StrTy nurl="https://www.cell.com/action/downloadCitationSecure?objectUri=pii:"+pii+"&direct=true&include=cit&submit=Export&downloadFileName=foodoo."+pii;
+
+MM_MSG(MMPR4(__FUNCTION__,pii,uin,nurl))
+// do no adopt, try this again... 
+IdxTy rcr=Recurse(in,out,nurl,1);
+// file:///tmp/chromate_downloads/foodoo.S0166223600020312.ris
+const StrTy n2url="file:///tmp/chromate_downloads/foodoo."+pii+".ris"; // S0166223600020312.ris
+IdxTy rcr2=Recurse(in,out,n2url,0);
+
+
+} // pii 
+out.exit(nm);
+return 0; 
+} // guesscellnew
+
  static  IdxTy guesscell(const InpTy & in , OutTy & out , const IdxTy xflags =0  )  { 
 const StrTy nm="guessscell";
 out.enter(nm);
@@ -163,6 +189,8 @@ Blob b;
 IdxTy rcf= out.good_enough(b,fnbib,in,url,nm,0);
 out.exit(nm);
 return 0; 
+} // guesscell
+
 #if 0
 guesscell()
 uin="$1"
@@ -175,7 +203,6 @@ echo guesscell think we want $dff | smsg
 url="https://secure.jbs.elsevierhealth.com/action/downloadCitationSecure?code=cell-site&direct=true&downloadFile=marlin_cell165_579&objectUri=pii:S0092867416302136"
 url="$dff"
 #endif
-} // guesscell
 
 
  static  IdxTy guessaip(const InpTy & in , OutTy & out , const IdxTy xflags=0)  { 
@@ -5440,7 +5467,7 @@ return rcr;
 return 0;
 } // RecurseIf 
 
- static  IdxTy Recurse(const InpTy & in , OutTy & out, const StrTy & nurl ) 
+ static  IdxTy Recurse(const InpTy & in , OutTy & out, const StrTy & nurl,const IdxTy flags=0  ) 
 {
 //MM_MSG(" recursion "<<MMPR2(in.depth(),in.uin()))
 if (in.depth()>3)
@@ -5452,9 +5479,15 @@ return 0; // break;
 InpTy in2(in,nurl);
 OutTy out2(out,nurl);
 IdxTy rc=in.mom()->Guess(in2,out2,in.rflags());
+const bool skip_adopt=Bit(flags,0);
+if (!skip_adopt)
+{
 MM_ERR(" return from recurions adopting now ... "<<MMPR(nurl))
 //MM_MSG(MMPR(out2.found()))
 out.adopt(out2);
+} else 
+
+MM_ERR(" SKIPPING return from recurions adopting now ... "<<MMPR2(flags,nurl))
 return 0;
 
 } // Recurse  

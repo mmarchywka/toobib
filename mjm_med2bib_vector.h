@@ -1,6 +1,9 @@
  AddPair("guessdoi",&Myt::guessdoi,"^10\\."); 
  AddPair("guessdoilink",&Myt::guessdoi,"http.*doi\\.org/"); 
-AddPair("guesscell",&Myt::guesscell,"=www.cell.com"); 
+AddPair("guesscellnew",&Myt::guesscellnew,"cell.com"); 
+// 2026 wtf? 
+//AddPair("guesscell",&Myt::guesscell,"=www.cell.com"); 
+AddPair("guesscell",&Myt::guesscell,"www.cell.com"); 
  AddPair("guessaip",&Myt::guessaip,"aip.org"); 
  AddPair("guesshind",&Myt::guesshind,"hindawi.com"); 
  AddPair("guesspmc",&Myt::guesspmc,"ncbi.nlm.nih.*PMC[0-9]"); 

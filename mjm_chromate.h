@@ -1978,8 +1978,36 @@ m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chr
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36";
+
+
+#if 0
+
+ nc -l 9999
+GET /foo/doo HTTP/1.1
+Host: 127.0.0.1:9999
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-US,en;q=0.9
+
+#endif
+
 // may need to match the "Brand" info 
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36";
+m_bro_ver="143";
+// sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"
+m_bro_brand="\"Not A(Brand\";v=\"24\"";
+m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"+m_bro_ver+".0.0.0 Safari/537.36";
+
 m_bro_name="/opt/google/chrome/chrome";
 // script to pickup ld path 
 m_bro_name="/opt/google/chrome/mike-chrome";
@@ -2277,6 +2305,12 @@ CmdParam v;
 //v.add("sec-ch-ua",StrTy("\"Google Chrome\";v=\"113\", \"Chromium\";v=\"113\", \"Not-A.Brand\";v=\"24\""));
 // needs to match ua string
 v.add("sec-ch-ua",StrTy("\"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\", \"Not-A.Brand\";v=\"99\""));
+StrTy ver="139";
+StrTy brand= "\"Not-A.Brand\";v=\"99\"";
+if (m_bro_ver!="") ver=m_bro_ver;
+if (m_bro_brand!="") brand=m_bro_brand;
+StrTy temp_brand="\"Google Chrome\";v=\""+ver+"\", \"Chromium\";v=\""+ver+"\", "+brand;
+v.add("sec-ch-ua",temp_brand);
 v.add("sec-ch-ua-mobile",StrTy("\"?0\""));
 v.add("sec-ch-ua-platform",StrTy("\"Linux\""));
 const bool refer_policy_ok=false;
@@ -2379,6 +2413,8 @@ IdxTy m_port;
 StrTy m_fifo;
 StrTy m_bro_name, m_options,m_port_option,m_user_dir,m_user_profile;
 StrTy m_bro;
+StrTy m_bro_ver;
+StrTy m_bro_brand;
 StrTy m_ua,m_current_ua;
 StrTy m_url;
 StrTy m_download_path,m_tmp_dir,m_download_dir;
