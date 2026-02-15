@@ -1538,7 +1538,14 @@ Exec(mkstr);
 
 } // make_dir
 //StrTy nocmd3=Spfx()+"Page.setDownloadBehavior\",\"params\":{\"behavior\":\""+ "allow" + "\",\"downloadPath\":\""+path+"\"},\"id\":";
+
+// 2026-02 ai says its now Browser.setDownloadBehavio
+// probably wrong because it works now. update causes prompt to come up
+// apparently that kills the debug access wtf. looks ok now. 
 StrTy nocmd3=Spfx()+"Page.setDownloadBehavior\",\"params\":{\"behavior\":\""+ "allow" + "\",\"downloadPath\":\""+path+"\",\"eventsEnabled\":true},\"id\":";
+//StrTy nocmd3=Spfx()+"Browser.setDownloadBehavior\",\"params\":{\"behavior\":\""+ "allow" + "\",\"downloadPath\":\""+path+"\",\"eventsEnabled\":true},\"id\":";
+
+
 Ragged rs;
 rs=CmdGet(fi,IdAdd(nocmd3),flags);
 
@@ -1999,13 +2006,23 @@ Sec-Fetch-Dest: document
 Accept-Encoding: gzip, deflate, br, zstd
 Accept-Language: en-US,en;q=0.9
 
+
+
+sec-ch-ua: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+
 #endif
 
 // may need to match the "Brand" info 
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36";
-m_bro_ver="143";
+//m_bro_ver="143";
+m_bro_ver="145";
 // sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"
-m_bro_brand="\"Not A(Brand\";v=\"24\"";
+//m_bro_brand="\"Not A(Brand\";v=\"24\"";
+m_bro_brand="\"Not:A-Brand\";v=\"99\"";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"+m_bro_ver+".0.0.0 Safari/537.36";
 
 m_bro_name="/opt/google/chrome/chrome";
@@ -2309,8 +2326,12 @@ StrTy ver="139";
 StrTy brand= "\"Not-A.Brand\";v=\"99\"";
 if (m_bro_ver!="") ver=m_bro_ver;
 if (m_bro_brand!="") brand=m_bro_brand;
-StrTy temp_brand="\"Google Chrome\";v=\""+ver+"\", \"Chromium\";v=\""+ver+"\", "+brand;
-v.add("sec-ch-ua",temp_brand);
+
+StrTy v145="sec-ch-ua: \"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"";
+
+//StrTy temp_brand="\"Google Chrome\";v=\""+ver+"\", \"Chromium\";v=\""+ver+"\", "+brand;
+//v.add("sec-ch-ua",temp_brand);
+v.add("sec-ch-ua",v145);
 v.add("sec-ch-ua-mobile",StrTy("\"?0\""));
 v.add("sec-ch-ua-platform",StrTy("\"Linux\""));
 const bool refer_policy_ok=false;

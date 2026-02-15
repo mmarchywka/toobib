@@ -4320,10 +4320,77 @@ typedef typename BibEntry::kvp_type Kvp;
 //typedef typename mjm_wovdb<Tr,StrTy> CrossLinks;
 //typedef  mjm_wovdb<Tr,StrTy> CrossLinks;
 typedef  std::map<IdxTy,StrTy> CrossLinks;
+// 2026 update
+// https://clinicaltrials.gov/study/NCT06169826
+//  wget -O xxx -S -v "https://clinicaltrials.gov/api/v2/studies?query.titles=NCT06169826&fields=protocolSection"
 
  static  IdxTy guessclinicaltrialsgov(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
-{ 
+{
 const StrTy nm="guessclinicaltrialsgov";
+out.enter(nm);
+const StrTy & uin=in.uin();
+const StrTy fn=out.fn(); //
+const StrTy fntemp=out.fn("temp"); //
+const StrTy fntemp2=out.fn("temp2"); //
+const StrTy fnbib=out.fn("bibtex"); //
+const IdxTy nstart=out.found();
+const bool all=in.collect_all();
+StrTy nctid=MutateOnly(uin, "sed -e 's/.*NCT/NCT/' | sed -e 's/[^NCT0-9]//g' " ,out );
+if (nctid=="")
+{ MM_ERR( " no nctid "<<MMPR2(nctid,uin)) }
+StrTy url="https://clinicaltrials.gov/api/v2/studies?query.titles="
+			+nctid+"&fields=protocolSection";
+//if (url==uin)
+{
+MM_ERR(" same url " <<MMPR2(url,uin))
+} 
+Grc grc=in.getter().normalget(fntemp,url,2048);
+Kvp m;
+
+StrTy type="article";
+StrTy name=nctid;
+Ragged j;
+StrTy parsecmd="cat "+fntemp+"| toobib -json1 "; // +fntemp2;
+//(parsecmd);
+StrTy xx=fntemp2;
+IdxTy rch=cmd_exec(xx,StrTy(),parsecmd,out,8);
+
+j.kvp_splitter(0);
+j.load(fntemp2);
+MM_ILOOP(i,j.size())
+{ 
+const Line & l=j[i];
+const IdxTy len=l.size();
+if (len<4) continue;
+StrTy k=l[len-2];
+int p=len-2;
+// remove "global " studies and protocolsection 
+while (p>11) { p-=2; if (l[p].length()) k=l[p]+""+k;  }
+k=StrUtil::fancy_to_lower(k);
+m[k]+=l[len-1];
+
+}
+m["publisher"]= m["contactslocationsmoduleoverallofficialsaffiliation"];
+m["date"]=m["statusmodulestudyfirstsubmitdate"];
+m["title"]=m["identificationmoduleofficialtitle"];
+m["author"]=m["contactslocationsmoduleoverallofficialsname"];
+
+MM_LOOP(ii,m)
+{
+MM_MSG(MMPR2((*ii).first,(*ii).second)<<".")
+
+}
+MM_ERR(MMPR(j.dump()))
+//MM_DIE(" trials")
+IdxTy rc=synthesize(in, out, url, nm, fnbib, name, type, m, 0);
+out.exit(nm);
+return rc;
+} // guessclinicaltrialsgov
+ 
+
+static  IdxTy guessclinicaltrialsgovold(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
+{ 
+const StrTy nm="guessclinicaltrialsgovold";
 out.enter(nm);
 const StrTy & uin=in.uin();
 const StrTy fn=out.fn(); //
@@ -4331,6 +4398,7 @@ const StrTy fntemp=out.fn("temp"); //
 const StrTy fnbib=out.fn("bibtex"); //
 const IdxTy nstart=out.found();
 const bool all=in.collect_all();
+
 Grc grc=in.getter().normalget(fn,uin,16);
 Blob b;
 Xrc xrc=in.xformer().html_to_rendered(b,fn,0);
@@ -4407,7 +4475,8 @@ m=mnew;
 IdxTy rc=synthesize(in, out, url, nm, fnbib, name, type, m, 0);
 out.exit(nm);
 return rc;
-} // guessclinicaltrialsgov
+} // guessclinicaltrialsgovold
+
 template <class Tv> 
 static IdxTy FirstOfKeys(Kvp & m, const StrTy & ko, const Tv & v, const IdxTy flags)
 {
