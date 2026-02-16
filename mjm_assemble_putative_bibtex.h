@@ -261,7 +261,8 @@ StrTy cr="\n";
 MM_LOOP(ii,list) { 
 const StrTy & x=be.get(*ii);
 MM_ERR(MMPR2(x,(*ii)))
-s+=cr+(x); slin+=" "+(x);
+// 2026-02 remove strings of blanks lol 
+if (x.length()) { s+=cr+(x); slin+=" "+(x); }
 } // ii 
 
 return 0;
@@ -407,7 +408,14 @@ if (anda!=BAD) ndate=ndate.substr(0,anda);
 be.only("date",ndate);
 // this is f- up because it is a munge of lines... 
 // but it is due to slin which is intended.... gets everything. 
-be.replace("date_orig",slin,0);
+StrTy slin2;
+char ccc[slin.length()+2];
+const char * ps=slin.c_str();
+int pc=0;
+MM_ILOOP(i,slin.length()) { if (ps[i]!='\n'){ ccc[pc]=ps[i]; ++pc; } }
+ccc[pc]=0;
+slin2=StrTy(ccc);
+be.replace("date_orig",slin2,0);
 NotateEdit(be,"date",ndate);
 // except that does not  work... 
 // this is postponed to let the date expander do it, rewrite_ymd

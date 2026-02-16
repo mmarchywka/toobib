@@ -4342,14 +4342,31 @@ StrTy url="https://clinicaltrials.gov/api/v2/studies?query.titles="
 			+nctid+"&fields=protocolSection";
 //if (url==uin)
 {
-MM_ERR(" same url " <<MMPR2(url,uin))
+MM_ERR(" urls " <<MMPR2(url,uin))
 } 
 Grc grc=in.getter().normalget(fntemp,url,2048);
-Kvp m;
 
 StrTy type="article";
 StrTy name=nctid;
+Kvp m;
 Ragged j;
+NewDefaultJsonScraper(m,j,out,fntemp2,fntemp,"", 11,0);
+m["publisher"]= m["contactslocationsmoduleoverallofficialsaffiliation"];
+m["date"]=m["statusmodulestudyfirstsubmitdate"];
+m["title"]=m["identificationmoduleofficialtitle"];
+m["author"]=m["contactslocationsmoduleoverallofficialsname"];
+
+MM_LOOP(ii,m) { MM_ERR(MMPR2((*ii).first,(*ii).second)<<".") }
+MM_ERR(MMPR(j.dump()))
+//MM_DIE(" trials")
+IdxTy rc=synthesize(in, out, url, nm, fnbib, name, type, m, 0);
+out.exit(nm);
+return rc;
+} // guessclinicaltrialsgov
+static IdxTy NewDefaultJsonScraper(Kvp & m, Ragged & j, OutTy & out, const StrTy & fntemp2, const StrTy & fntemp, const StrTy & sep,const IdxTy llim, const IdxTy flags )
+{
+// TODO there should be a programmatic interface not cmdline 
+// and this can be the new general default json scraper 
 StrTy parsecmd="cat "+fntemp+"| toobib -json1 "; // +fntemp2;
 //(parsecmd);
 StrTy xx=fntemp2;
@@ -4365,27 +4382,15 @@ if (len<4) continue;
 StrTy k=l[len-2];
 int p=len-2;
 // remove "global " studies and protocolsection 
-while (p>11) { p-=2; if (l[p].length()) k=l[p]+""+k;  }
+//while (p>11) { p-=2; if (l[p].length()) k=l[p]+""+k;  }
+while (p>llim) { p-=2; if (l[p].length()) k=l[p]+sep+k;  }
 k=StrUtil::fancy_to_lower(k);
 m[k]+=l[len-1];
-
 }
-m["publisher"]= m["contactslocationsmoduleoverallofficialsaffiliation"];
-m["date"]=m["statusmodulestudyfirstsubmitdate"];
-m["title"]=m["identificationmoduleofficialtitle"];
-m["author"]=m["contactslocationsmoduleoverallofficialsname"];
 
-MM_LOOP(ii,m)
-{
-MM_MSG(MMPR2((*ii).first,(*ii).second)<<".")
 
-}
-MM_ERR(MMPR(j.dump()))
-//MM_DIE(" trials")
-IdxTy rc=synthesize(in, out, url, nm, fnbib, name, type, m, 0);
-out.exit(nm);
-return rc;
-} // guessclinicaltrialsgov
+return 0;
+} // NewDefaultJsonScraper
  
 
 static  IdxTy guessclinicaltrialsgovold(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
