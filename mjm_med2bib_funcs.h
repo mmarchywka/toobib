@@ -5248,6 +5248,9 @@ out.exit(nm);
 return 0;
 } // guessxxx
 // new format has a "bibtex" link lol
+// 2026 02 https://books.google.com/books?id=UDwPBAAAQBAJ&output=bibtex
+// https://www.google.com/books/edition/A_Comprehensive_Guide_to_Geriatric_Rehab/UDwPBAAAQBAJ?hl=en&gbpv=1&dq=digestive+malabsorption+elderly+&pg=PA45&printsec=frontcover
+// but doesn't get everything Zoterro gets...
  static  IdxTy guessgooglebooks(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
 { 
 const StrTy nm="guessgooblebooks";
@@ -5258,6 +5261,31 @@ const StrTy fntemp=out.fn("temp"); //
 const StrTy fnbib=out.fn("bibtexx"); //
 const IdxTy nstart=out.found();
 const bool all=in.collect_all();
+// isolate book id and use that...
+//StrTy pii=MutateOnly(uin, "grep -v Citation | sed -e 's;.*/S;/S;' |sed -e 's;?.*;;' | sed -e 's/[^0-9S]//g' " ,out );
+// save id= if already there then isolate book id 
+StrTy pii=MutateOnly(uin, "sed -e 's;?id=;/;' | sed -e 's/?.*.//g' | sed -e 's;.*/;;g' |sed -e 's;&.*;;' " ,out );
+StrTy url="https://books.google.com/books?id="+pii+"&output=bibtex";
+MM_ERR(MMPR3(nm,pii,url))
+ //static  IdxTy Mutate(const InpTy & in , OutTy & out, const StrTy & cmd ) 
+ //static  IdxTy RecurseIf(const InpTy & in , OutTy & out, const StrTy &uin, const StrTy & nurl ) 
+if (pii.length()) RecurseIf(in,out,uin,url);
+
+out.exit(nm);
+return 0;
+} // guessgooglebooks
+
+ static  IdxTy guessgooglebooksold(const InpTy & in , OutTy & out , const IdxTy xflags=0)  
+{ 
+const StrTy nm="guessgooblebooksold";
+out.enter(nm);
+const StrTy & uin=in.uin();
+const StrTy fn=out.fn(); //
+const StrTy fntemp=out.fn("temp"); //
+const StrTy fnbib=out.fn("bibtexx"); //
+const IdxTy nstart=out.found();
+const bool all=in.collect_all();
+
 //Grc grc=in.getter().normalget(fn,uin,16);
 Grc grc=in.getter().headlessget(fn,uin,1);
 out.enter("new");
