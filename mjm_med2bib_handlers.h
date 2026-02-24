@@ -2,6 +2,7 @@
 ////////////////////////////////////////////
 // hard coded and hard to change as static with limite
 // params, no In thing... 
+// 2026_02 this appears to already be a member function of pawnoff...
 static IdxTy cmd_exec(StrTy & dest, const StrTy & s, const StrTy &cmd, OutTy & out, const IdxTy flags)
 {
 const bool always=true; // Bit(flags,0);

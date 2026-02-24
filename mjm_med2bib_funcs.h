@@ -5265,6 +5265,17 @@ const bool all=in.collect_all();
 //StrTy pii=MutateOnly(uin, "grep -v Citation | sed -e 's;.*/S;/S;' |sed -e 's;?.*;;' | sed -e 's/[^0-9S]//g' " ,out );
 // save id= if already there then isolate book id 
 StrTy pii=MutateOnly(uin, "sed -e 's;?id=;/;' | sed -e 's/?.*.//g' | sed -e 's;.*/;;g' |sed -e 's;&.*;;' " ,out );
+GoogBooks gb;
+// // first fetch into fn, parse into fn2 , and then save in fn
+//IdxTy by_goog_id(const StrTy & fn2, const StrTy & fn, const StrTy & id, const IdxTy flags)
+
+gb.by_goog_id(fntemp,fnbib,pii,0);
+Blob b;
+b.load(fnbib);
+IdxTy rcfge= out.good_enough(b,fnbib,in,uin,nm,0);
+
+const IdxTy none=out.found();
+if ((none!=nstart)&&!all) { out.exit(nm); return 0; } 
 StrTy url="https://books.google.com/books?id="+pii+"&output=bibtex";
 MM_ERR(MMPR3(nm,pii,url))
  //static  IdxTy Mutate(const InpTy & in , OutTy & out, const StrTy & cmd ) 

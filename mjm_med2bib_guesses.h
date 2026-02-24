@@ -4,6 +4,7 @@
 #include "mjm_hier_two.h"
 #include "mjm_bibtex_fields.h"
 #include "mjm_globals.h"
+#include "mjm_goog_books.h"
 #include "mjm_thread_util.h"
 #include "mjm_cpp_regex.h"
 #include "mjm_wovdb.h"
@@ -118,6 +119,8 @@ typedef mjm_has_bibtex<Tr> HasBib;
 typedef mjm_bomtex_json<Tr> BomTex;
 
 typedef mjm_string_base_params<Tr> BaseParams;
+
+typedef mjm_goog_books<Tr> GoogBooks;
 
 class _attempt
 {
