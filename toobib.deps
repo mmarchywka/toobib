@@ -57,7 +57,7 @@ toobib.out: toobib.h /home/documents/cpp/mjm/hlib/mjm_globals.h \
  /home/documents/cpp/mjm/hlib/mjm_wovdb.h \
  /home/documents/cpp/mjm/hlib/mjm_vv_map.h mjm_ext_things.h \
  mjm_char_star_map.h mjm_bibtex_domains.h mjm_med2bib_guesses.h \
- mjm_hier_two.h mjm_goog_books.h mjm_has_bibtex.h \
+ mjm_hier_two.h mjm_goog_books.h mjm_crud_man.h mjm_has_bibtex.h \
  mjm_assemble_putative_bibtex.h mjm_hierarchial_kvp.h \
  mjm_idiosyncratic_source_locator.h mjm_try_n_get.h mjm_xref_json.h \
  ../mjsonu/mjsonu.h /home/documents/cpp/mjm/hlib/mjm_block_matrix.h \

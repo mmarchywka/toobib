@@ -1171,7 +1171,8 @@ Blob b;
 b.load(fn);
 const IdxTy fnsz1=in.getter().size(fn,0);
 MM_MSG(" using wget for test  ")
-MM_MSG(" using wget lol ")
+MM_MSG(" using wget lol "<<MMPR(b.size()))
+MM_ERR(" using wget lol "<<MMPR(b.size()))
 MM_ERRF(" trying wget fall back "<<MMPR2(fn,StrTy(in.uin())))
 // headless fails on pdf, but wget is being blocked but
 // now chromate download works but names are a trick.. 

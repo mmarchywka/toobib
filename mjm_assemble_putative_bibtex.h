@@ -617,8 +617,11 @@ if (newname.length()>36) break;
 } // use_good_names
 //}// length 
 #endif
+// 2026-03 hit dups on auth year 
+const int min_name_len=11;
 const bool missing=(name=="missing");
-const bool bad_name=missing||(name.length()<5);
+//const bool bad_name=missing||(name.length()<5);
+const bool bad_name=missing||(name.length()<min_name_len);
 const bool fix_name_later=true;
 if (!fix_name_later)
 {
@@ -627,7 +630,8 @@ if (fix_all_names||bad_name)
 be.make_name();
 name=be.name();
 //if (newname.length()>4) be.name(newname); 
-if (name.length()<6)  
+//if (name.length()<6)  
+if (name.length()<min_name_len)  
 {
 StrTy doi=be.get("doi");
 if ( doi.length()>8) be.name(doi); 
@@ -739,7 +743,8 @@ if (fix_all_names||bad_name)
 be.make_name();
 name=be.name();
 //if (newname.length()>4) be.name(newname); 
-if (name.length()<6)  
+//if (name.length()<6)  
+if (name.length()<min_name_len)  
 {
 StrTy doi=be.get("doi");
 if ( doi.length()>8) be.name(doi); 
