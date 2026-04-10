@@ -934,13 +934,16 @@ StrTy("window.resizeTo(100,100);")
 if (false) ExecBroCmd(fi,"navigator_override");
 if (true) ExecBroCmd(fi,"delete_window");
 
+} // m_session , from below 2026_04
 // in head mode it downloads after verify into Download dir.. 
  // https://www.researchgate.net/profile/Arman-Mahboubi-Soufiani/publication/283729703_Optical_Properties_of_Photovoltaic_Organic-Inorganic_Lead_Halide_Perovskites/links/614b94473c6cb31069875863/Optical-Properties-of-Photovoltaic-Organic-Inorganic-Lead-Halide-Perovskites.pdf
+
+{
 fetch_info fi;
 SetDownloadPath(fi,m_download_dir,1);
+}
 
-
-} // m_session 
+// } // m_session  2026_04
 
 return rc;
 
@@ -1985,7 +1988,7 @@ m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chr
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36";
-
+m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36";
 
 #if 0
 
@@ -1998,7 +2001,7 @@ sec-ch-ua-mobile: ?0
 sec-ch-ua-platform: "Linux"
 Upgrade-Insecure-Requests: 1
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
-// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+// Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,* / *;q=0.8,application/signed-exchange;v=b3;q=0.7
 Sec-Fetch-Site: none
 Sec-Fetch-Mode: navigate
 Sec-Fetch-User: ?1
@@ -2014,16 +2017,32 @@ sec-ch-ua-platform: "Linux"
 Upgrade-Insecure-Requests: 1
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
 
+2026-03-18
+sec-ch-ua: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,* / *;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+
 #endif
 
 // may need to match the "Brand" info 
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36";
 //m_bro_ver="143";
-m_bro_ver="145";
+//m_bro_ver="145";
+m_bro_ver="147";
 // sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"
 //m_bro_brand="\"Not A(Brand\";v=\"24\"";
 m_bro_brand="\"Not:A-Brand\";v=\"99\"";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"+m_bro_ver+".0.0.0 Safari/537.36";
+
+m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36";
+
 
 m_bro_name="/opt/google/chrome/chrome";
 // script to pickup ld path 
@@ -2031,6 +2050,7 @@ m_bro_name="/opt/google/chrome/mike-chrome";
 // https://stackoverflow.com/questions/54398950/how-to-fix-chrome-headless-not-downloading-files
  //   chrome_options.add_argument('--window-size=1920,1080')
  //chrome_options.add_argument('--disable-dev-shm-usage')
+
 /*
 browser.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
 params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': path}}
@@ -2083,8 +2103,14 @@ m_user_profile="Default";
 m_tmp_dir="/tmp";
 
 //m_download_path="./chromate_downloads";
+
 m_download_path="chromate_downloads";
 m_download_dir=m_tmp_dir+"/"+m_download_path;
+// 2026_04 researchgate is downloading to this anyway and dir wtach misses
+// it nice pdf with doi etc. 
+m_download_dir="/home/marchywka/Downloads";
+MM_MSG(" stupid download for research gate  to "<<MMPR(m_download_dir))
+
 // fucking ignored now? FUCK
 //m_download_path="Downloads";
 //m_download_dir="/home/marchywka/"+m_download_path;
@@ -2327,11 +2353,14 @@ StrTy brand= "\"Not-A.Brand\";v=\"99\"";
 if (m_bro_ver!="") ver=m_bro_ver;
 if (m_bro_brand!="") brand=m_bro_brand;
 
+// doh 
 StrTy v145="sec-ch-ua: \"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"";
-
+//sec-ch-ua: "Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"
+StrTy v147="\"Google Chrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"";
 //StrTy temp_brand="\"Google Chrome\";v=\""+ver+"\", \"Chromium\";v=\""+ver+"\", "+brand;
 //v.add("sec-ch-ua",temp_brand);
-v.add("sec-ch-ua",v145);
+//v.add("sec-ch-ua",v145);
+v.add("sec-ch-ua",v147);
 v.add("sec-ch-ua-mobile",StrTy("\"?0\""));
 v.add("sec-ch-ua-platform",StrTy("\"Linux\""));
 const bool refer_policy_ok=false;

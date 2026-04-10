@@ -77,6 +77,7 @@ AddPair("guessgoopat",&Myt::guessgoopat,"patents.google.com/patent");
  AddPair("guesscambridge",&Myt::guesscambridge,"cambridge.org"); 
  AddPair("guessabo",&Myt::guessabo,"ojs.abo.fi"); 
  AddPair("guessmcmaster",&Myt::guessmcmaster,"mcmaster.ca"); 
+ AddPair("guessresearchgate3",&Myt::guessresearchgate3,"researchgate.net"); 
  AddPair("guessresearchgate2",&Myt::guessresearchgate2,"researchgate.net"); 
  AddPair("guessagrisfao",&Myt::guessagrisfao,"agris.fao.org"); 
  AddPair("guessrugnlportal",&Myt::guessrugnlportal,"rug.nl/research/portal"); 

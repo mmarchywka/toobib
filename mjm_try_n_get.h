@@ -288,8 +288,9 @@ if(save_fi) if( fi.doc.length()) b.save(dest);
 if (!save_fi) if(m_msg_flags) { MM_MSG(" dropped dubsious save   "<<MMPR3(fi.doc.length(),dest,StrTy(url))) }
 }
 // wtf???? 
-MM_ERR(" 2025-12 stop nonsense wiat ...")
-if (!dump_dom) WaitFile(dest);
+MM_ERR(" 2026_04 add back  2025-12 stop nonsense wiat ...")
+//if (!dump_dom) 
+WaitFile(dest);
 
 
 //MM_ERR(MMPR(cmd))

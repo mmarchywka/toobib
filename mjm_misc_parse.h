@@ -76,6 +76,8 @@ enum { SZC=sizeof(Ch), BITS=SZC*8, BITMASK=(1<<BITS)-1, SZTAB=sizeof(Iv), VBITS=
 
 
 // typedef typename Tr::MyBlock  MyBlock;
+// API
+
 public:
 mjm_misc_parse() {}
 ~mjm_misc_parse() {}

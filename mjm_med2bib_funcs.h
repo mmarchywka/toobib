@@ -2795,6 +2795,49 @@ citepastecat  "$fn" "$uin" "$url" "guesscambridge"
 
  static  IdxTy guessabo(const InpTy & in , OutTy & out , const IdxTy xflags=0)  { MM_ERR(" not impl")  return 0; }
  static  IdxTy guessmcmaster(const InpTy & in , OutTy & out , const IdxTy xflags=0)  { MM_ERR(" not impl")  return 0; }
+
+
+ static  IdxTy guessresearchgate3(const InpTy & in , OutTy & out , const IdxTy xflags =0  )  { 
+const StrTy nm="researchgate3";
+out.enter(nm);
+const StrTy & uin=in.uin();
+const StrTy fn=out.fn("temp"); //
+// copy from guesser logic
+in.getter().clear(fn,0);
+// this uses chromate wget feature
+const bool show_trial=true;
+Grc grc=in.getter().headlessdownload(fn,in.uin(),16+(show_trial?32:0));
+const IdxTy fnsz=in.getter().size(fn,0);
+const StrTy n2url="file://"+fn;
+MM_ERR(MMPR3(fn,fnsz,n2url))
+if (fnsz>100)
+{
+IdxTy rcr2=Recurse(in,out,n2url,0);
+MM_ERR(MMPR(rcr2))
+}
+// don't remutate...
+//StrTy pii=MutateOnly(uin, "grep -v Citation | sed -e 's;.*/S;/S;' |sed -e 's;?.*;;' | sed -e 's/[^0-9S]//g' " ,out );
+//MM_MSG(MMPR3(__FUNCTION__,pii,uin))
+//if (pii!="")
+//{
+//StrTy nurl="https://www.cell.com/action/downloadCitationSecure?objectUri=pii:"+pii+"&direct=true&include=cit&submit=Export&downloadFileName=foodoo."+pii;
+
+//MM_MSG(MMPR4(__FUNCTION__,pii,uin,nurl))
+// do no adopt, try this again... 
+//IdxTy rcr=Recurse(in,out,nurl,1);
+// file:///tmp/chromate_downloads/foodoo.S0166223600020312.ris
+//const StrTy n2url="file:///tmp/chromate_downloads/foodoo."+pii+".ris"; // S0166223600020312.ris
+//IdxTy rcr2=Recurse(in,out,n2url,0);
+//} // pii 
+
+
+out.exit(nm);
+return 0; 
+} // guessresearchgate3 
+
+
+
+
 // this site is an AFFCUFK 
 // https://www.researchgate.net/profile/Jody-Ouweland/publication/343917910_Reduced_vitamin_K_status_as_a_potentially_modifiable_risk_factor_of_severe_COVID-19/links/5f48bab6299bf13c504629dd/Reduced-vitamin-K-status-as-a-potentially-modifiable-risk-factor-of-severe-COVID-19.pdf
  static  IdxTy guessresearchgate2(const InpTy & in , OutTy & out , const IdxTy xflags=0)  

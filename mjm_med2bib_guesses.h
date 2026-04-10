@@ -1143,8 +1143,9 @@ Grc grc=in.getter().headlessget(fn,in.uin(),1+(show_trial?32:0));
 // make a zed length file for now... 
 const IdxTy fnsz=in.getter().size(fn,0);
 const IdxTy htmlfake=in.getter().embedded_etc(fn,0);
-
-bool headless_failed=(fnsz<100)||(IdxTy(grc)!=0)||(htmlfake!=0);
+MM_MSG(" should force download for research gate   dowh 2026_04")
+bool headless_failed=true||(fnsz<100)||(IdxTy(grc)!=0)||(htmlfake!=0);
+//bool headless_failed=(fnsz<100)||(IdxTy(grc)!=0)||(htmlfake!=0);
 MM_ERR(" handler get "<<MMPR4(headless_failed,fnsz,fn,StrTy(in.uin())))
 if (headless_failed) 
 MM_ERR(" handler get failed  "<<MMPR4(headless_failed,fnsz,fn,StrTy(in.uin())<<MMPR(htmlfake)))
