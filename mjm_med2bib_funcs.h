@@ -164,7 +164,9 @@ MM_MSG(MMPR4(__FUNCTION__,pii,uin,nurl))
 // do no adopt, try this again... 
 IdxTy rcr=Recurse(in,out,nurl,1);
 // file:///tmp/chromate_downloads/foodoo.S0166223600020312.ris
-const StrTy n2url="file:///tmp/chromate_downloads/foodoo."+pii+".ris"; // S0166223600020312.ris
+// TODO need to get this somewhere... 
+//const StrTy n2url="file:///tmp/chromate_downloads/foodoo."+pii+".ris"; // S0166223600020312.ris
+const StrTy n2url="file:///home/marchywka/Downloads/foodoo."+pii+".ris"; // S0166223600020312.ris
 IdxTy rcr2=Recurse(in,out,n2url,0);
 
 

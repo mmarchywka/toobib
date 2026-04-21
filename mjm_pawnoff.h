@@ -259,6 +259,7 @@ const bool file= Bit(flags,1);
 const bool notrailingcrlf= Bit(flags,2); // 4 
 const bool dfile= Bit(flags,3); /// 8
 const bool add_err_to_cout= Bit(flags,4); /// 16 
+const bool quiet= Bit(flags,8); /// 256 
 Blob d,err,cout;
 StrTy _cmd;
 //if (file) { _cmd="cat \""+s+"\" |"+cmd; }
@@ -266,7 +267,7 @@ if (file) { _cmd=cmd; d.load(s); }
 else { d=s; _cmd=cmd; }
 //IdxTy rc=out.hand().fileio(cout,err,d,_cmd,3);
 IdxTy rc=fileio(cout,err,d,_cmd,3);
-if (always||(rc!=0)) { MM_ERR(MMPR3(dest,s,dfile)<< MMPR4(file,notrailingcrlf,flags,rc)<<MMPR4(cmd,StrTy(cout),StrTy(err),StrTy(d))) }
+if ((always&&!quiet)||(rc!=0)) { MM_ERR(MMPR3(dest,s,dfile)<< MMPR4(file,notrailingcrlf,flags,rc)<<MMPR4(cmd,StrTy(cout),StrTy(err),StrTy(d))) }
 if (add_err_to_cout)
 {
 MM_ERR(" new feature 2026 02 ")
@@ -512,7 +513,7 @@ Ss ss;
 //ss<<"cat "<<fin<<" | " <<cmd <<" >"<<fout<<" 2>"<<ferr<<" ; echo $? >> "<<frc;
  if (no_ins) ss<<"echo -n | "<<cmd <<"" << " >"<<fout<<" 2>"<<ferr<<" ; echo $? >> "<<frc;
 else  ss<<cmd <<" < "<< fin  << " >"<<fout<<" 2>"<<ferr<<" ; echo $? >> "<<frc;
-//if (flag_debug) 
+if (flag_debug) 
 {MM_ERR("XXXX "<<ss.str()) }
 
 IdxTy rc=std::system(ss.str().c_str());

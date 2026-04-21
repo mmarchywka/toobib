@@ -801,6 +801,7 @@ void clear()  {  m_lines.clear();}
 const IdxTy  size() const { return m_lines.size(); } 
 const void ignore_hash(const bool x )  { m_ignore_hash=x; } 
 void push_back(const Line & li ) { m_lines.push_back(li); }  
+void push_back(const StrTy & s ) { Line l; l.push_back(s); m_lines.push_back(l); }  
 //void add(const Line & li ) { m_lines.push_back(li); }  
 void add(const Line & li ) { Add(li); }  
 Myt& operator<<(const Line &li) {add(li); return (*this); }

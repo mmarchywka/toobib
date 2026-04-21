@@ -1891,7 +1891,17 @@ if ( m_chrome_with_head)
 //m_options=" --start-minimized  --window-size=128x128 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins  --crash-dump-dir=/tmp ";
 m_options=" --start-minimized  --window-size=128x128 --enable-logging=stderr --v=1  --crash-dump-dir=/tmp ";
 m_options=" --disable-plugins --start-minimized  --window-size=128x128 --enable-logging=stderr --v=1  --crash-dump-dir=/tmp ";
-
+// 2026-04
+m_options="  --start-minimized  --window-size=128x128 --enable-logging=stderr --v=1  --crash-dump-dir=/tmp ";
+// 2026-04 copy from headless base lol. 
+// m_options= " --headless=new --window-size=1920,1080 --enable-logging=stderr --v=1 --v=1 --disable-gpu  --disable-plugins --disable-blink-features=AutomationControlled --crash-dump-dir=/tmp --run-all-compositor-stages-before-draw --disable-site-isolation-trials --disable-web-security  ";
+// 2026-04 the headed version headers don't match real bro doh 
+// bo warning disable-web-security not supported 
+m_options+= " --run-all-compositor-stages-before-draw --disable-site-isolation-trials --disable-web-security  ";
+// 2026_04 did not verify this was the cause but started to work
+// on cureus now. some of the sec- headers in headed mode didn't
+// match the normal bro headers not sure if that changed here. 
+m_options= " --start-minimized --window-size=128x128  ";
 //m_options="  --window-size=128x128 --enable-logging=stderr --v=1  --disable-gpu   --crash-dump-dir=/tmp ";
 
 //m_options+="  --run-all-compositor-stages-before-draw --enable-begin-frame-control ";
@@ -2061,7 +2071,7 @@ command_result = browser.execute("send_command", params)
 
 // This  works but the other  FAILS  
 //SOMEBRO="/opt/google/chrome/chrome --headless --disable-blink-features=AutomationControlled --disable-gpu  --disable-plugins  --dump-dom  "
-
+// probably never used 2026
 if ( m_chrome_with_head)
 m_options=" --start-minimized  --window-size=1920,1080 --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins  --crash-dump-dir=/tmp ";
 else{
@@ -2108,6 +2118,7 @@ m_download_path="chromate_downloads";
 m_download_dir=m_tmp_dir+"/"+m_download_path;
 // 2026_04 researchgate is downloading to this anyway and dir wtach misses
 // it nice pdf with doi etc. 
+m_download_path=".";
 m_download_dir="/home/marchywka/Downloads";
 MM_MSG(" stupid download for research gate  to "<<MMPR(m_download_dir))
 
@@ -2361,7 +2372,9 @@ StrTy v147="\"Google Chrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v
 //v.add("sec-ch-ua",temp_brand);
 //v.add("sec-ch-ua",v145);
 v.add("sec-ch-ua",v147);
-v.add("sec-ch-ua-mobile",StrTy("\"?0\""));
+//v.add("sec-ch-ua-mobile",StrTy("\"?0\""));
+//most recent chrome doh 2026-04
+v.add("sec-ch-ua-mobile",StrTy("?0"));
 v.add("sec-ch-ua-platform",StrTy("\"Linux\""));
 const bool refer_policy_ok=false;
 if (refer_policy_ok) 
