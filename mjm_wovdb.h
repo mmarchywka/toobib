@@ -64,6 +64,7 @@ typedef mjm_vv_map<Tr,StrTy,Tidx,Myt> Tsidx;
 typedef mjm_vv_map<Tr,IdxTy,Tidx,Myt> Tiidx;
 typedef std::map<StrTy,Tsidx> Tsidxs;
 // this should be the same for indexes
+// API
 public:
 typedef  Tobj value_type;
 typedef typename Tsidx::vector_type vector_type;
@@ -86,12 +87,16 @@ return (*ii).second.size();
 } 
 void re_index(const Myt & that ) { ReIndex(that); } 
 // add the item i to index name with value k 
+void index(const Tidx i, const StrTy & name, const D &k)
+{ Ss ss; ss<<k; index(i,name,ss.str()); } 
 void index(const Tidx i, const StrTy & name, const StrTy &k)
 {
 m_sidxs[name].add(k,i); 
 }
 // return index iterators or a vector of hit indicies
 //vector_type * find(const StrTy & n, const StrTy &k) { return m_sidxs[n][k]; } 
+const vector_type * find(const StrTy & n, const D &k) const
+{ Ss ss; ss<<k; return find(n,ss.str()); } 
 const vector_type * find(const StrTy & n, const StrTy &k) const
 { 
 auto ii=m_sidxs.find(n);
@@ -102,6 +107,38 @@ if (ii==m_sidxs.end()) return 0;
 return (*ii).second[k];
 //return m_sidxs[n][k]; 
 } 
+StrTy dump_records(const vector_type & v)
+{ Ss ss; MM_LOOP(ii,v){ss<<MMPR2((*ii),m_data[*ii].dump())<<CRLF;} return ss.str(); } 
+const vector_type op(const vector_type * v1, const vector_type * v2, const IdxTy flags)
+{
+vector_type x;
+if ((v1==NULL)&&(v2==NULL)) return x;
+const bool opor=Bit(flags,0);
+const bool opand=Bit(flags,1);
+MM_ERR(MMPR3(flags,opor,opand))
+if (v1==NULL) if (opand) return x;  return v2;
+if (v2==NULL) if (opand) return x;  return v1;
+IdxTy pc1=0;
+IdxTy pc2=0;
+// TODO these indicies should both be monotonic increasing allowing
+// much faster operations. However, its easier to write brute force
+// exhasutive code and safer for now. Could be much better....
+std::map<IdxTy,IdxTy>  m;
+MM_LOOP(ii,*v1) {++m[*ii];  } // v1
+MM_LOOP(ii,*v2) {++m[*ii];  } // v1
+MM_LOOP(ii,m)
+{
+const IdxTy k=(*ii).first;
+const IdxTy c=(*ii).second;
+if (opand) { if (c==2) x.push_back(k);  } 
+// not really need to check lol 
+if (opor) { if (c!=0) x.push_back(k);  } 
+
+} 
+
+
+return x; 
+} // op
 // make it const so user does not think he is updating original 
 // return something - default ctor if not found 
 const Tobj  find(const StrTy & n, const StrTy & k, const IdxTy i) const

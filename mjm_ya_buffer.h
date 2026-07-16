@@ -134,7 +134,13 @@ void save(const StrTy & fn,const StrTy &s) {Save(fn,s); }
 StrTy xxx_test(const StrTy & sin, const IdxTy flags) 
 { return XXX_test(sin,flags); } 
 ~mjm_ya_buffer() {if (m_dump_on_exit) { MM_ERR(MMPR(dump())) } delete[] m_tgt; }
-void no_dump_on_exit() { m_dump_on_exit=false; } 
+void no_dump_on_exit() { m_dump_on_exit=false; }
+StrTy state() const 
+{
+Ss ss;
+ss<<MMPR4(m_wr_ptr,m_rd_ptr,available(),m_full)<<MMPR2(m_sz,m_max);
+return ss.str();
+}  
 StrTy dump(const IdxTy flags=0)const  { return Dump(flags); }
 IdxTy size() const { return m_sz; }
 void size(const IdxTy sz  )  { 
@@ -178,9 +184,12 @@ bool get_from_stream(IsTy * is)
 const IdxTy s=contig_write();
 is->read(m_tgt+m_wr_ptr,s);
 IdxTy n=is->gcount();
+MM_ERR(MMPR4(s,n,available(),m_wr_ptr))
 m_wr_ptr=(m_wr_ptr+n) % m_sz; 
 if (n) if (m_wr_ptr==m_rd_ptr) m_full=true;
 //MM_ERR(MMPR(m_full))
+//MM_ERR(MMPR(available())<<MMPR3(m_full,m_wr_ptr,m_rd_ptr))
+//MM_ERR(MMPR(is->eof()))
 return is->eof();
 } // get_from_stream;
 
@@ -313,8 +322,11 @@ IdxTy contig_write()
 {
 IdxTy sz=m_sz-m_wr_ptr;
 if (m_rd_ptr>m_wr_ptr) sz=m_rd_ptr-m_wr_ptr;
+
 if (m_rd_ptr==m_wr_ptr) 
-{ if (m_full) return 0; return m_sz;  }
+// 2026_04 wtf overrun with m_sz ... doh 
+//{ if (m_full) return 0; return m_sz;  }
+{ if (m_full) return 0;   }
 return sz;
 }
 void contig(const Data*& p, IdxTy &sz)
@@ -331,6 +343,7 @@ else sz=m_wr_ptr-m_rd_ptr;
 } // contig
 
 void inc(volatile IdxTy & p,const IdxTy n ) const { p=(p+n)%m_sz; } 
+char peek() const { return m_tgt[m_rd_ptr]; } 
 void take( const IdxTy n) { inc(m_rd_ptr,n); //  m_rd_ptr=(m_rd_ptr+n) % m_sz;
 //MM_ERR(MMPR4(m_rd_ptr,m_wr_ptr,n,m_full))
 if (n) m_full=false;

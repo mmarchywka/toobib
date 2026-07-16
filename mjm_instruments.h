@@ -377,18 +377,24 @@ IdxTy i=0;
 for(; i<(RWLEN-1); ++i)
 {
 if (m_f->eof()) break;
+// 2026-06
+if (m_f->fail()) break;
 if (!m_f->good()) break;
 int c=m_f->get();
 if (!m_f->good()) break;
 if ((c=='\r')||(c=='\n')) break;
 lp[i]=c;
 }
+// 2026-06
+if (m_f->fail()) break;
+if (m_f->eof()) break;
 if (i==(RWLEN-1)) toolong=true;
 lp[i]=0;
 }// cr or lf 
 else if (m_use_alt_eol) m_f->getline(lp,RWLEN,m_eol);
 else m_f->getline(lp,RWLEN);
-if ( toolong ||(!(*m_f).eof() &&!(*m_f).good()))
+// add fail 2026-06
+if ( toolong ||((!(*m_f).fail())&&!(*m_f).eof() &&!(*m_f).good()))
 {
 MM_ERR(" line may bt too long not  truncating file, expand "<<MMPR(lp))
 (*m_f).clear();
@@ -461,7 +467,7 @@ m_words.clear();
 // can add quotes and comments and crap later 
 // danger will robinson this does not update n if there is nothing there, need to check
 //while (ok(&ss)) { ss>>n; m_words.push_back(n); }
-//MM_ERR(" ASSFUCK "<<MMPR(m_splitter))
+//MM_ERR(" ASCK "<<MMPR(m_splitter))
 switch (m_splitter)
 {
 case 1: { parse_full(m_words,line,m_sep); break; } 
@@ -1045,7 +1051,7 @@ AnyMask(cclass,PUNC)
 ||(!AnyMask(cclass,ALPHA)&&AnyMask(cclass_old,ALPHA))
 ||(AnyMask(cclass,ALPHA)&&!AnyMask(cclass_old,ALPHA))
 );
-
+// fuk MM_ERR(MMPR4(xistion,cpc,cclass,cclass_old))
 // do not pass the quote to esc to dest 
 if (check_esc&&!esc) if (cpc=='\\')  { esc=true; ++pc; continue; }  // else esc=false;
 if (check_quote&&!esc) if (cpc=='"') {
@@ -1058,11 +1064,13 @@ if (check_quote&&!esc) if (cpc=='"') {
 } 
 //const bool br=(cpc==sep)&&(!esc)&&(!quote);
 const bool br=(xistion)&&(!esc)&&(!quote);
+// fuk MM_ERR(MMPR(br))
 if (br){  
 	c[dp]=0; 
 	// really pointless here now 
 //	if ((c[start]!=0)||no_concat_seps ) 
 		words.push_back(c+start); 
+// fuk MM_ERR(MMPR(words.back()))
 	++dp;  // dp=0???? 
 	start=dp;
 // put the sep into a new stinrg
@@ -1078,6 +1086,7 @@ if (deb) { MM_ERR(MMPR4(pc,dp,start,words.size())) }
 
 if (start!=dp){ c[dp]=0;  words.push_back(c+start);  } 
 if (deb) { MM_ERR(MMPR4(pc,dp,start,words.size())) } 
+// fuk MM_ERR(MMPR(words.back()))
 
 }// tokenize 
 

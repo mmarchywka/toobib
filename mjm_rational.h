@@ -128,6 +128,24 @@ enum NUMERICS { REDUCE=1, DEFER=2, CONSTD=4, SANE_OPERATORS=8,EXPBASE=10, BAD=~0
 // MJM_RATIONAL_NAME // mjm_rational(const IntTy & n, const IntTy & d, const bool sign ): m_n(n), m_d(d) ,m_flags(sign?SIGN:0) {}
  (const IntTy & n, const IntTy & d, const bool sign ): m_n(n), m_d(d) ,m_flags(sign?SIGN:0) {}
 
+
+//////////////////////////////////////////////////////
+#define MYABS(x) ((x<0)?(-x):x)
+#if MACRONAME
+ MJM_RATIONAL_NAME 
+#else
+  mjm_rational
+#endif
+// MJM_RATIONAL_NAME // mjm_rational(const IntTy & n, const IntTy & d, const bool sign ): m_n(n), m_d(d) ,m_flags(sign?SIGN:0) {}
+ (const int & n, const int & d): m_n(MYABS(n)), m_d(MYABS(d)) 
+,m_flags(((n*d)<0)?SIGN:0) { 
+//MM_ERR(MMPR4(n,d,(n*d),m_flags)<<MMPR(string(1)))
+}
+// see comments in string() near bottom signbit was commented
+// out around 2022 put back in 2026 wtf? 
+
+
+//////////////////////////////////////////////////////
 #if MACRONAME
  MJM_RATIONAL_NAME 
 #else
@@ -323,6 +341,8 @@ bool have_period=false;
 if (m_d==0) { ss<<" inf "; return ss.str();  } 
 if (m_d<0) { m_d=-m_d;  m_n=-m_n; } 
 if (m_n<0) { ss<<"-"; m_n=-m_n; } 
+// 2026-06-25
+if (signbit()) { ss<<"-"; } 
 while (i<ndigits)
 {
 int nx=0; 
@@ -849,7 +869,10 @@ if (goal) MM_ERR(" operator error "<<x1<<" "<<x2<<" n="<<m_n<<" d="<<m_d<<" "<<t
 return !true;} // this is negative, so less than
 if ( ts&&!s){
 #ifndef SKIP_RAT_SANITY
-if (!goal) MM_ERR(" operator error "<<x1<<" "<<x2<<" n="<<m_n<<" d="<<m_d<<" "<<that.m_n<<" "<<that.m_d<<" signs "<<sign()<<" "<<that.sign())
+//if (!goal) MM_ERR(" operator error "<<x1<<" "<<x2<<" n="<<m_n<<" d="<<m_d<<" "<<that.m_n<<" "<<that.m_d<<" signs "<<sign()<<" "<<that.sign())
+if (!goal) MM_ERR(" operator error "<<MMPR3((*this),that,that.approx())<<" "<<MMPR(approx())<<MMPR(m_n)<<MMPR(m_d)<<" "<<MMPR(that.m_n)<<" "<<MMPR(that.m_d)<<MMPR2(sign(),that.sign()));
+
+
 #endif // SKIP_RAT_SANITY
 
  return !false;} // this is postiive , so not less than
@@ -1190,7 +1213,9 @@ return ss.str();
 
 }
 // 2022-12-25
+//2026-06-07 WTF? signbit missing? uncomment??? 
 //if (x.signbit()) ss<<"-";
+if (x.signbit()) ss<<"-";
 //ss<<m_n<<"/"<<m_d; 
 if ((x.m_flags&OF_FLOAT)==0)  ss<<x.m_n;
 //else ss<<double(m_n)<<".";

@@ -288,6 +288,16 @@ const IdxTy _rc=simple_cmd_exec(rv,StrTy(),cmd,4);
 rc=_rc;
 return rv;
 }
+
+IdxTy eds_exec(StrTy & err, StrTy & d, const StrTy &s, const StrTy & cmd, const IdxTy flags)
+{
+Blob cout,cerr,data;
+data=s;
+IdxTy rc=fileio(cout,cerr,data,cmd,3);
+err=StrTy(cerr);
+d=StrTy(cout);
+return rc;
+} // des_exec
 IdxTy simple_cmd_exec(StrTy & dest, const StrTy & s, const StrTy &cmd, const IdxTy flags)
 {
 const bool always= Bit(flags,0);

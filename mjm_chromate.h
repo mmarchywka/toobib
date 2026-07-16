@@ -1083,6 +1083,7 @@ ExecBroCmd(fi, "discover_targets" ,flags);
 }
 ///////////////////////////////////////////////
 const bool b_renew_wscat=true;
+// this causes long dealy for no obvious reason .. 
 // wtf this is in the wrong place thought it was after naviaget lol 
 if (m_chrome_with_head&& b_renew_wscat)
 //if (renew_wscat)
@@ -1133,6 +1134,8 @@ SetDownloadPath(fi,m_download_dir,1);
 // this worked in one test case that was slently failing. 
 // after all that it doesn't exist 
 //ExecBroCmd(fi, "refpol",url);
+// 2026-07 wtf?  see line above? 
+SetDownloadPath(fi,m_download_dir,1);
 if (m_use_ref)
 {
 StrTy ref="https://www.google.com"; 
@@ -1140,7 +1143,14 @@ MM_ERR(" vavigating with ref "<<MMPR2(url,ref))
 ExecBroCmd(fi, "navigateref",url,ref);
 }
 else { ExecBroCmd(fi, "navigate",url); }
-
+/*
+bool death_test=true;
+if (death_test) { ExecBroCmd(fi,"disable_debugger",flags); }  
+if( death_test) m_wscat.kill();
+if (death_test) MM_MSG(" death killing debug to test ")
+if (death_test) MM_ERR(" death killing debug to test ")
+*/
+// wtf after navigate?
 SetDownloadPath(fi,m_download_dir,1);
 if (skip_dom) return 0; 
 
@@ -1861,7 +1871,10 @@ ss<<m_bro_name<<" "<<m_options<<" "<<m_port_option<<m_port<<" "<<user_info;
 //ss<<"  --enable-logging=stderr --v=1  --disable-gpu  --disable-plugins  --crash-dump-dir=/tmp ";
 m_bro=ss.str();
 //MM_ERR(MMPR(m_bro))
-
+// 2026-07
+//if ( m_chrome_with_head)
+// 2026-07 this navigates but doesn't impact brow
+//m_bro+=" file:///home/documents/cpp/proj/toobib/start.html";
 
 } // MakeBroCmd
 // TODO duplicated code alert, see also Init wtf.. 
@@ -1878,10 +1891,16 @@ m_user_dir="/tmp/";
 m_user_profile="Headless";
 }
 // https://stackoverflow.com/questions/13436855/launch-google-chrome-from-the-command-line-with-specific-window-coordinates 
-
+// 2026-07 this disables navigation bar lol 
      //--app="data:text/html,<html><body><script>window.moveTo(580,240);window.resizeTo(800,600);window.location='http://www.test.de';</script></body></html>"
 // this works but then it pops up another window ...   
- StrTy wtf=" --app=\"data:text/html,<html><body><script>window.moveTo(10,10);window.resizeTo(100,100);</script></body></html>\"";
+// 2026_07 deleting webdriver like this no help... 
+StrTy wtf=" --app=\"data:text/html,<html><body><script>window.moveTo(10,10);window.resizeTo(100,100);</script></body></html>\"";
+
+ //StrTy wtf=" --app=\"data:text/html,<html><body><script>window.navigator.webdriver=false;delete window.navigator.webdriver;window.moveTo(10,10);window.resizeTo(100,100);</script></body></html>\"";
+ //StrTy wtf=" --app=\"data:text/html,<html><body><script>const xxx=Object.getPrototypeOf(navigator); delete xxx.webdriver;window.moveTo(10,10);window.resizeTo(100,100);</script></body></html>\"";
+
+//StrTy wtf=" --app=\"data:text/html,<html><body><script>const xxx=navigator.__PROTO__; delete xxx.webdriver; navigator.__proto__=xxx;window.moveTo(10,10);window.resizeTo(100,100);</script></body></html>\"";
 
 if ( m_chrome_with_head)
 {
@@ -1902,6 +1921,9 @@ m_options+= " --run-all-compositor-stages-before-draw --disable-site-isolation-t
 // on cureus now. some of the sec- headers in headed mode didn't
 // match the normal bro headers not sure if that changed here. 
 m_options= " --start-minimized --window-size=128x128  ";
+// 2026-07 no navigation bar? 
+//m_options= " -window-size=228x228  ";
+
 //m_options="  --window-size=128x128 --enable-logging=stderr --v=1  --disable-gpu   --crash-dump-dir=/tmp ";
 
 //m_options+="  --run-all-compositor-stages-before-draw --enable-begin-frame-control ";
@@ -1912,6 +1934,8 @@ m_options= " --start-minimized --window-size=128x128  ";
 //m_options+=" --type=renderer --change-stack-guard-on-fork=enable --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=82 --variations-seed-version=20240322-165906.502000 ";
 // fail too 
 //m_options+=" --type=renderer --lang=en-US --num-raster-threads=2  --renderer-client-id=82 --variations-seed-version=20240322-165906.502000 ";
+// temp comment out no helpp 2026-07
+// navigating doesn't change fging bro size
 
 m_options+=wtf;
 }
@@ -1999,6 +2023,7 @@ m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chr
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36";
+m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36";
 
 #if 0
 
@@ -2045,13 +2070,13 @@ Sec-Fetch-Dest: document
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36";
 //m_bro_ver="143";
 //m_bro_ver="145";
-m_bro_ver="147";
+m_bro_ver="150";
 // sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"
 //m_bro_brand="\"Not A(Brand\";v=\"24\"";
 m_bro_brand="\"Not:A-Brand\";v=\"99\"";
 m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"+m_bro_ver+".0.0.0 Safari/537.36";
 
-m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36";
+m_ua="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36";
 
 
 m_bro_name="/opt/google/chrome/chrome";
@@ -2118,6 +2143,8 @@ m_download_path="chromate_downloads";
 m_download_dir=m_tmp_dir+"/"+m_download_path;
 // 2026_04 researchgate is downloading to this anyway and dir wtach misses
 // it nice pdf with doi etc. 
+// 2026-07 maybe swtich back the dir was set after navigate in gotopage?
+// wtf 
 m_download_path=".";
 m_download_dir="/home/marchywka/Downloads";
 MM_MSG(" stupid download for research gate  to "<<MMPR(m_download_dir))
@@ -2368,10 +2395,13 @@ if (m_bro_brand!="") brand=m_bro_brand;
 StrTy v145="sec-ch-ua: \"Not:A-Brand\";v=\"99\", \"Google Chrome\";v=\"145\", \"Chromium\";v=\"145\"";
 //sec-ch-ua: "Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"
 StrTy v147="\"Google Chrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"";
+StrTy v150="\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"";
+
 //StrTy temp_brand="\"Google Chrome\";v=\""+ver+"\", \"Chromium\";v=\""+ver+"\", "+brand;
 //v.add("sec-ch-ua",temp_brand);
 //v.add("sec-ch-ua",v145);
-v.add("sec-ch-ua",v147);
+//v.add("sec-ch-ua",v147);
+v.add("sec-ch-ua",v150);
 //v.add("sec-ch-ua-mobile",StrTy("\"?0\""));
 //most recent chrome doh 2026-04
 v.add("sec-ch-ua-mobile",StrTy("?0"));

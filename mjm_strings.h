@@ -50,6 +50,15 @@ StrTy x=y;
 std::transform(x.begin(), x.end(), x.begin(), ::tolower);
 return x; 
 }
+static StrTy fancy_to_upper(const StrTy & y) 
+{
+StrTy x=y;
+//std::string data = "Abc"; 
+std::transform(x.begin(), x.end(), x.begin(), ::toupper);
+return x; 
+}
+
+
 // find pattern p in s 
 static bool fast_grep(const StrTy &s, const StrTy & p)
 {

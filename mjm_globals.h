@@ -196,7 +196,9 @@ std::string MJM_BLANK(double d) { std::stringstream ss; if (d!=0) ss<<d; return 
 
 // too confusing for syntax highlighter.. 
 //#define MM_ILOOP(v,n)  for( IdxTy v=0; v<(n) ; ++v) { 
-#define MM_ILOOP(v,n)  for( IdxTy v=0; v<(n) ; ++v)  
+//#define MM_ILOOP(v,n)  for( IdxTy v=0; v<(n) ; ++v)  
+// 2026_04 if anything gets f-ed up lol 
+#define MM_ILOOP(v,n)  for( IdxTy v=0; v<IdxTy(n) ; ++v)  
 #define MM_LOOP(v,obj)  for( auto v=obj.begin(); v!=obj.end(); ++v)  
 #define MM_RLOOP(v,obj)  for( auto v=obj.rbegin(); v!=obj.rend(); ++v)  
 #define MM_SZ_LOOP(v,obj,sz)  const IdxTy sz= obj.size();  for( IdxTy v=0; v<sz;  ++v)  
