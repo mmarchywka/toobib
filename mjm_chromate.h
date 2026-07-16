@@ -300,6 +300,12 @@ void bro_cmd(const StrTy & url, const IdxTy flags)
 // likely fail 
 fetch_info download(const StrTy & fn,const StrTy & url, const IdxTy flags) 
 { return Download(fn,url,flags);}
+//  2217  ./chromate.out "one xxx https://www.homes.com/property/0-outback-ridge-trail-jasper-ga-unit-10456301/fntllcceltpr8/ 0"
+
+fetch_info one(const StrTy & fn,const StrTy & url, const IdxTy flags) 
+{ return One(fn,url,flags);}
+
+
 // this will wait a long time if server fails but should wait for downlaod
 fetch_info wget(const StrTy & fn,const StrTy & url,const IdxTy flags) 
 // 2025- add or of flgs not just 1 
@@ -363,7 +369,7 @@ public:
 Myt * p;
 StrTy cmd;
 }; // tpclass
-static void * LaunchBro (void * p)
+static void * LaunchBro(void * p)
 {
 tpclass * tpc=(tpclass*) p;
 Myt * pp=tpc->p; // (Myt*) p;
@@ -906,15 +912,10 @@ MM_ERR(" target id="<<MMPR(tid))
 } 
 
 } // m_target
-
-
-
 // https://stackoverflow.com/questions/45374377/not-able-to-maximize-chrome-window-in-headless-mode
 if (m_session=="")
 {
-
 Ragged r=ExecBroCmd(fi,"attach",m_target);
-
 StrTy sess=m_json.any_kv(r,"sessionId",0,flags);
 m_session=sess;
 MM_ERR(MMPR(sess))
@@ -1311,6 +1312,71 @@ StupidCrLf(base);
 StupidCrLf(file);
 MM_ERR(MMPR4(__FUNCTION__,fn,base,file))
 } // Split
+fetch_info One(const StrTy & fn, const StrTy & url, const IdxTy flags) 
+{
+fetch_info fi;
+m_port=23000;
+m_bro="/opt/google/chrome/chrome  --remote-debugging-port=23000  --user-data-dir=/tmp/ --profile-directory=Default --app=\"data:text/html,<html><body><script>window.moveTo(10,10);window.resizeTo(300,300);window.location.assign(\\\""+url+"\\\");</script></body></html>\"";
+Launch();
+//Exec(m_bro);
+sleep(2);
+m_download_path="chromate_downloads";
+m_download_dir=m_tmp_dir+"/"+m_download_path;
+// this needs to be done from javascript 
+SetDownloadPath(fi,m_download_dir,1);
+GetTarget(fi,flags);
+GetSession(fi,flags);
+Ragged r=ExecBroCmd(fi,"get_document");
+//Ragged r;
+//int rc=TryOutNode(fi,r,"get_outer_one",StrTy()); 
+StrTy nodeid="3";
+Ragged r2;
+Ss ss;
+MM_LOOP(ii,r)
+{
+const Ragged::Line & l =(*ii);
+const IdxTy len=l.size();
+if (len<4) continue;
+if (l[len-3]!="nodeId") continue;
+nodeid=l[len-1];
+fetch_info ff;
+int rc=TryOutNode(ff,r2,"get_outer_node",nodeid); 
+AppendFi(ss,ff); 
+} // ii
+// only one that works but wrong node wtf 
+//int rc=TryOutNode(fi,r,"get_outer_back",nodeid); 
+//int rc=TryOutNode(fi,r,"get_outer_obj",nodeid); 
+//if (rc==~0U) break; if (rc==0U) { SaveDebug(fi); return fi; }
+SaveDebug(fi);
+std::ofstream ofs(fn.length()?fn:StrTy("foof"));
+ofs<<ss.str(); 
+r.save("foor",0,"|");
+r2.save("foor2",0,"|");
+//Free(); // dtor should do this 
+MM_ERR(MMPR3(fn,url,flags));
+fi.actual_doc=true;
+fi.doc=ss.str();
+return fi;
+} // One
+void GetTarget(fetch_info&fi, const IdxTy flags )
+{
+ Ragged r=ExecBroCmd(fi,"discover_targets");
+auto tm=m_json.index(r,flags);
+StrTy tid=m_json.kvm(tm,"type","page","targetId");
+m_target=tid;
+MM_ERR(" target id="<<MMPR(tid))
+
+} // GetTarget
+void GetSession(fetch_info&fi, const IdxTy flags )
+{
+Ragged r=ExecBroCmd(fi,"attach",m_target);
+StrTy sess=m_json.any_kv(r,"sessionId",0,flags);
+m_session=sess;
+MM_ERR(MMPR(sess))
+
+} // GetSession
+
+
 
 // fn is supposed to be a file name not a path 
 fetch_info Download(const StrTy & fn, const StrTy & url, const IdxTy flags) 
@@ -1750,7 +1816,15 @@ ExecBroCmd(fi,"enable_debugger",flags); // needs to be a const not flags
 
 
 } // ReleaseDebug
-
+void AppendFi(Ss & ss, fetch_info &fi)
+{
+if (!fi.actual_doc) { ss<<fi.doc; return ;}
+typedef mjm_read_buffer<Tr>  RdBuff;
+RdBuff  rd;
+mjm_strings::base64_decode(rd,fi.doc);
+rd.cap();
+ss<<rd.buf();
+} // AppendFi
 void SaveDebug(fetch_info & fi)
 {
 MM_ERR("saving to zzzz"<<MMPR2(fi.actual_doc,fi.doc.length()))
@@ -2706,6 +2780,7 @@ else if (cmd=="fetch") { auto fi=x.fetch(cip.p1,0); MM_ERR(MMPR(fi.dump())) }
 else if (cmd=="save") { x.save(cip.p1,cip.p2,0); }
 // fn,url
 else if (cmd=="download") { x.download(cip.p1,cip.p2,0); }
+else if (cmd=="one") { x.one(cip.p1,cip.p2,0); }
 // file, url
 else if (cmd=="wget") { x.download(cip.p1,cip.p2,1); }
 else if (cmd=="close") { x.close(); }
