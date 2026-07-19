@@ -301,7 +301,8 @@ void bro_cmd(const StrTy & url, const IdxTy flags)
 fetch_info download(const StrTy & fn,const StrTy & url, const IdxTy flags) 
 { return Download(fn,url,flags);}
 //  2217  ./chromate.out "one xxx https://www.homes.com/property/0-outback-ridge-trail-jasper-ga-unit-10456301/fntllcceltpr8/ 0"
-
+// rg works too but downloads to ~/Downloads
+// https://www.researchgate.net/profile/Pravat-Mandal/publication/381585046_Iron_Chelators_and_Alzheimer's_Disease_Clinical_Trials/links/6693f70baf9e615a15e70110/Iron-Chelators-and-Alzheimers-Disease-Clinical-Trials.pdf?origin=publicationDetail&_sg%5B0%5D=ivsif-BwNHIL4btSdmVqcLqUdV6xS5ivOlaRvz3ts9WRlDWQ-Eln-s7iJrVAte0-SOoTASwFNwEYOUPV-egZXw.HH-NO9pWb9gYy1OjRP5nVRKrNfGLY0pa2i9jvRto8apOkVfa6QezAp3B0kFgWepkOdutkPOsHeg_YTb2i8-o3A&_sg%5B1%5D=hcUnOwzWGpbMpyqG4UK4hmQ3bdWwY1_NelNhtDekNjoG6f5aIAmUw7d-EFM9AV0DTLAUpzRsO1k6-k6UsW44b_9o1EK5nEwaaipcwoXmq5Zl.HH-NO9pWb9gYy1OjRP5nVRKrNfGLY0pa2i9jvRto8apOkVfa6QezAp3B0kFgWepkOdutkPOsHeg_YTb2i8-o3A&_iepl=&_rtd=eyJjb250ZW50SW50ZW50IjoibWFpbkl0ZW0ifQ%3D%3D&_tp=eyJjb250ZXh0Ijp7ImZpcnN0UGFnZSI6Il9kaXJlY3QiLCJwYWdlIjoicHVibGljYXRpb24iLCJwb3NpdGlvbiI6InBhZ2VIZWFkZXIifX0
 fetch_info one(const StrTy & fn,const StrTy & url, const IdxTy flags) 
 { return One(fn,url,flags);}
 
@@ -1003,7 +1004,18 @@ rd.write(fck,0);
 }
 return fi;
 } // PrintPage
+void DoPrintPdf(fetch_info & fi, const StrTy & fn, const StrTy & url)
+{
+Ragged r=ExecBroCmd(fi,"print_pdf",url);
+ExtractDoc(fi,"data");
+typedef mjm_read_buffer<Tr>  RdBuff;
+RdBuff  rd;
+mjm_strings::base64_decode(rd,fi.doc);
+std::ofstream fck(fn);
+rd.write(fck,0);
 
+} // DoPrintPdf
+ 
 
 IdxTy ExtractDoc(fetch_info & fi,const StrTy & field, const IdxTy flags=0)
 {
@@ -1312,18 +1324,76 @@ StupidCrLf(base);
 StupidCrLf(file);
 MM_ERR(MMPR4(__FUNCTION__,fn,base,file))
 } // Split
+StrTy dwb()
+{
+return "delete window.navigator.webdriver;";
+// const page = await browser.newPage(); await page.evaluateOnNewDocument(() => { delete Object.getPrototypeOf(navigator).webdriver; });";
+} 
+void BroWorking(const StrTy & url)
+{
+m_bro="/opt/google/chrome/chrome  --remote-debugging-port=23000  --user-data-dir=/tmp/ --profile-directory=Default --app=\"data:text/html,<html><body><script>window.moveTo(10,10);window.resizeTo(300,300);window.location.assign(\\\""+url+"\\\");</script></body></html>\"";
+}
+// anothger fucking infinite fucking time sink on security that
+// just fucking gets diabled to make any fucking simple thing fucking
+// work FUCK
+void BroDownload(const StrTy & url )
+{
+Ss ss;
+ss<<m_port;
+//m_bro="/opt/google/chrome/chrome  --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory=Default --download.default_directory=\""+m_download_dir+"\" --app=\"data:text/html,<html><body><script>"+dwb()+"window.moveTo(10,10);window.resizeTo(300,300);window.location.assign(\\\""+url+"\\\");</script></body></html>\"";
+// removing quotes makes it download but to default user dir wtf 
+//m_bro="/opt/google/chrome/chrome --no-sandbox   --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory=Default"
+m_bro="/opt/google/chrome/chrome --v=1   --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory=Default"
+//+"  --download.default_directory=\""+m_download_dir+"\""
+//+"  --savefile.default_directory=\""+m_download_dir+"\""
++"  --app=\"data:text/html,<html><body><script>"+dwb()+"window.moveTo(10,10);window.resizeTo(300,300);window.location.assign(\\\""+url+"\\\");</script></body></html>\"";
+
+}
+
+
+// 3 outputs are possible but typically only one is meaningful
+// the source and pdf are not mutually exclusive. 
+// self -initialited downloads are not common 
+
 fetch_info One(const StrTy & fn, const StrTy & url, const IdxTy flags) 
 {
 fetch_info fi;
+const bool print_to_pdf=Bit(flags,0);
+const bool watch_for_dload=Bit(flags,1);
+//DirWatch dw;
+//dw.watch(m_download_dir,0);
+//r=CmdGet(fi,IdAdd(GetDownloadString(fnfile,url,use_blank?1:0)),0);
+//PollNewDir(dw,fn,nmax,1);
+//void DoPrintPdf(fetch_info & fi, const StrTy & fn, const StrTy & url)
+// neeed not naviaget scrap assign
+
+MM_ERR(MMPR4(fn,url,print_to_pdf,watch_for_dload))
+//m_tmp_dir="/tmp";
+//m_tmp_dir="/home/documents/cpp/proj/toobib";
+//m_tmp_dir="/home/marchywka";
+// This f-ing shti doesn't f-ing work more days wastes on stupid shti.
+// If you change this, the RG link displays the pdf isntead of trying 
+// to download its like a permissions problem another dum azz secutty
+// feature to nuje more time wasted avoiding it than using it wtfck.
+// just us ght FUCKING ~/Downloads fucking fold er 
+
+//m_download_path="chromate_downloads";
+//m_download_path="Downloads/fucker/";
+//m_download_dir=m_tmp_dir+"/"+m_download_path;
+//m_tmp_dir="/tmp";
+
+// this needs to be done from javascript 
+//SetDownloadPath(fi,m_download_dir,1);
+// chrome.exe --user-data-dir="C:\Path\To\CustomProfile" --download.default_directory="C:\Your\Target\DownloadDirectory"
+// set the port so the other stuff knows where it is 
 m_port=23000;
-m_bro="/opt/google/chrome/chrome  --remote-debugging-port=23000  --user-data-dir=/tmp/ --profile-directory=Default --app=\"data:text/html,<html><body><script>window.moveTo(10,10);window.resizeTo(300,300);window.location.assign(\\\""+url+"\\\");</script></body></html>\"";
+//BroWorking(url);
+BroDownload(url);
+MM_ERR(MMPR(m_bro))
+// setup a watch or time selector in download f-ing dir 
 Launch();
 //Exec(m_bro);
 sleep(2);
-m_download_path="chromate_downloads";
-m_download_dir=m_tmp_dir+"/"+m_download_path;
-// this needs to be done from javascript 
-SetDownloadPath(fi,m_download_dir,1);
 GetTarget(fi,flags);
 GetSession(fi,flags);
 Ragged r=ExecBroCmd(fi,"get_document");
@@ -1356,6 +1426,10 @@ r2.save("foor2",0,"|");
 MM_ERR(MMPR3(fn,url,flags));
 fi.actual_doc=true;
 fi.doc=ss.str();
+// see if there is anything enw and hope the real user didn't download
+// any-fing=thing fcuk.
+
+MM_ERR(MMPR(m_bro))
 return fi;
 } // One
 void GetTarget(fetch_info&fi, const IdxTy flags )
@@ -1456,8 +1530,16 @@ if (fix_output_location)
 //Exec("cp \""+LocalFile(irl)+"\" \""+CompleDest(fn,fix_output_location)+"\"";
 // first wait for file to appear
 IdxTy nmax=100;
-IdxTy niter=0;
 MM_ERR(" waiting for download no failure detect "<<MMPR2(url,fn))
+PollNewDir(dw,fn,nmax,1);
+// then move to final resting place...
+} // fix_output_location 
+return fi;
+} // Download
+IdxTy PollNewDir(DirWatch & dw, const StrTy & fn, const IdxTy nmax,const IdxTy mssleep=1)
+{
+
+IdxTy niter=0;
 while (true)
 {
 StrTy output=m_wscat.drain(1,0,0);
@@ -1470,7 +1552,7 @@ MM_ERR(MMPR4(niter,stat,dw.size(),nm))
 if (stat==IdxTy(~0)) break;
 //dw.check(0);
 //if (dw.size()==0) { sleep(1); continue; } 
-if (stat==0) { mysleep(1); continue; } 
+if (stat==0) { mysleep(mssleep); continue; } 
 // make sure it is "moved" and has no "crdownload" suffix... 
 //const auto & e=dw.last();
 //MM_ERR(MMPR(e.dump()))
@@ -1480,17 +1562,19 @@ if (stat==1)
 {
 // this is the file detected by dir watch 
 const StrTy fndest=nm; // e.name();
-const StrTy movcmd="cp \""+m_download_dir+"/"+fndest+"\" \""+CompleteDest(fn,fix_output_location)+"\"";
+//const StrTy movcmd="cp \""+m_download_dir+"/"+fndest+"\" \""+CompleteDest(fn,fix_output_location)+"\"";
+const StrTy movcmd="cp \""+m_download_dir+"/"+fndest+"\" \""+CompleteDest(fn,true)+"\"";
 MM_ERR(MMPR(movcmd))
 Exec(movcmd);
 break;
 } // stat== 1
 } // true;
-// then move to final resting place...
 
-} // fix_output_location 
-return fi;
-} // Download
+
+return 0; 
+} // PollNewDir
+
+
 
 IdxTy DirStats(StrTy&nm,DirWatch & dw, const IdxTy flags=0)
 {
