@@ -1336,6 +1336,8 @@ m_bro="/opt/google/chrome/chrome  --remote-debugging-port=23000  --user-data-dir
 // anothger fucking infinite fucking time sink on security that
 // just fucking gets diabled to make any fucking simple thing fucking
 // work FUCK
+// the azzfukker has to be set in the fuking menu or edit the fing
+// json which is now saved for restore. Edit eh fucking file fuk 
 void BroDownload(const StrTy & url )
 {
 Ss ss;
@@ -1343,14 +1345,36 @@ ss<<m_port;
 //m_bro="/opt/google/chrome/chrome  --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory=Default --download.default_directory=\""+m_download_dir+"\" --app=\"data:text/html,<html><body><script>"+dwb()+"window.moveTo(10,10);window.resizeTo(300,300);window.location.assign(\\\""+url+"\\\");</script></body></html>\"";
 // removing quotes makes it download but to default user dir wtf 
 //m_bro="/opt/google/chrome/chrome --no-sandbox   --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory=Default"
-m_bro="/opt/google/chrome/chrome --v=1   --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory=Default"
+// making this verbose hangs too much output for hand to keep up doh 
+m_bro="/opt/google/chrome/chrome  --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory="+m_profile 
 //+"  --download.default_directory=\""+m_download_dir+"\""
 //+"  --savefile.default_directory=\""+m_download_dir+"\""
 +"  --app=\"data:text/html,<html><body><script>"+dwb()+"window.moveTo(10,10);window.resizeTo(300,300);window.location.assign(\\\""+url+"\\\");</script></body></html>\"";
 
 }
 
+/*
+// probably overkill for most sites but RG gets messed up. 
+ 2445  cp Preferences /tmp/Default3/
+ 2446  cp Cookies /tmp/Default3/
+ 2447  ./wtfff.sh 2>&1 | tee aaa
+ 2448  ls -al /tmp/chromate_downloads/
+ 2449  date
+ 2450  cp Preferences /tmp/Default3/
+ 2451  cp Cookies /tmp/Default3/
+ 2452  ./wtfff.sh 2>&1 | tee aaa
+ 2453  ls -al /tmp/chromate_downloads/
 
+*/
+void FixProfile(const StrTy & dir, const StrTy & prof)
+{
+if (dir!="/tmp") return;
+const StrTy srcdir="/home/documents/cpp/proj/toobib";
+Exec("cp "+srcdir+"/Preferences "+dir+"/"+prof);
+Exec("cp "+srcdir+"/Cookies "+dir+"/"+prof);
+
+
+} // FixProfile
 // 3 outputs are possible but typically only one is meaningful
 // the source and pdf are not mutually exclusive. 
 // self -initialited downloads are not common 
@@ -1368,25 +1392,28 @@ const bool watch_for_dload=Bit(flags,1);
 // neeed not naviaget scrap assign
 
 MM_ERR(MMPR4(fn,url,print_to_pdf,watch_for_dload))
-//m_tmp_dir="/tmp";
+m_tmp_dir="/tmp";
 //m_tmp_dir="/home/documents/cpp/proj/toobib";
 //m_tmp_dir="/home/marchywka";
+// this may be rg limiting downloads and making results unpredictable ...
 // This f-ing shti doesn't f-ing work more days wastes on stupid shti.
 // If you change this, the RG link displays the pdf isntead of trying 
 // to download its like a permissions problem another dum azz secutty
 // feature to nuje more time wasted avoiding it than using it wtfck.
 // just us ght FUCKING ~/Downloads fucking fold er 
-
-//m_download_path="chromate_downloads";
+// this has to match the assfuk jhson fuk 
+m_download_path="chromate_downloads";
 //m_download_path="Downloads/fucker/";
-//m_download_dir=m_tmp_dir+"/"+m_download_path;
-//m_tmp_dir="/tmp";
-
+m_download_dir=m_tmp_dir+"/"+m_download_path;
+m_tmp_dir="/tmp";
+m_profile="Default";
+FixProfile(m_tmp_dir,m_profile);
 // this needs to be done from javascript 
 //SetDownloadPath(fi,m_download_dir,1);
 // chrome.exe --user-data-dir="C:\Path\To\CustomProfile" --download.default_directory="C:\Your\Target\DownloadDirectory"
 // set the port so the other stuff knows where it is 
-m_port=23000;
+//m_port=23000;
+m_port=12000+port_mush();
 //BroWorking(url);
 BroDownload(url);
 MM_ERR(MMPR(m_bro))
@@ -2668,7 +2695,7 @@ StrTy m_bro_ver;
 StrTy m_bro_brand;
 StrTy m_ua,m_current_ua;
 StrTy m_url;
-StrTy m_download_path,m_tmp_dir,m_download_dir;
+StrTy m_download_path,m_tmp_dir,m_download_dir,m_profile;
 ThreadId m_thread;
 volatile IdxTy m_state;
 WsCat m_wscat;
