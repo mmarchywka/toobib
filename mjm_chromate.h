@@ -306,6 +306,8 @@ fetch_info download(const StrTy & fn,const StrTy & url, const IdxTy flags)
 fetch_info one(const StrTy & fn,const StrTy & url, const IdxTy flags) 
 { return One(fn,url,flags);}
 
+fetch_info download_one(const StrTy & fn, const StrTy & url, const IdxTy flags) 
+{ return  DownloadOne(fn, url,flags) ; } 
 
 // this will wait a long time if server fails but should wait for downlaod
 fetch_info wget(const StrTy & fn,const StrTy & url,const IdxTy flags) 
@@ -1322,6 +1324,7 @@ base=Exec("dirname \""+fn+"\"");
 file=Exec("basename \""+fn+"\"");
 StupidCrLf(base);
 StupidCrLf(file);
+if (base=="") base="/";
 MM_ERR(MMPR4(__FUNCTION__,fn,base,file))
 } // Split
 StrTy dwb()
@@ -1338,10 +1341,9 @@ m_bro="/opt/google/chrome/chrome  --remote-debugging-port=23000  --user-data-dir
 // work FUCK
 // the azzfukker has to be set in the fuking menu or edit the fing
 // json which is now saved for restore. Edit eh fucking file fuk 
-void BroDownload(const StrTy & url )
+void BroRender(const StrTy & url )
 {
-Ss ss;
-ss<<m_port;
+Ss ss; ss<<m_port;
 //m_bro="/opt/google/chrome/chrome  --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory=Default --download.default_directory=\""+m_download_dir+"\" --app=\"data:text/html,<html><body><script>"+dwb()+"window.moveTo(10,10);window.resizeTo(300,300);window.location.assign(\\\""+url+"\\\");</script></body></html>\"";
 // removing quotes makes it download but to default user dir wtf 
 //m_bro="/opt/google/chrome/chrome --no-sandbox   --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory=Default"
@@ -1352,7 +1354,55 @@ m_bro="/opt/google/chrome/chrome  --enable-logging=stderr  --remote-debugging-po
 +"  --app=\"data:text/html,<html><body><script>"+dwb()+"window.moveTo(10,10);window.resizeTo(300,300);window.location.assign(\\\""+url+"\\\");</script></body></html>\"";
 
 }
+void BaseBro(const IdxTy flags=0)
+{
+Ss ss; ss<<m_port;
+m_bro="/opt/google/chrome/chrome  --enable-logging=stderr  --remote-debugging-port="+ss.str()+"  --user-data-dir=/tmp/ --profile-directory="+m_profile 
+;
+} // BaseBro
+// of course this is another aazzfukk even locally
+// you have to go to page first, wait, js has not fukking sleep fukction
+// azzfukl
+// another fukking day spent trying to download a fukking file on a modern
+// fuikking computer azzfuk
+StrTy DownloadApp(const StrTy & fn, const StrTy & url, const IdxTy flags=0)
+{
+StrTy expr=" var cursor = document.getElementById(\'cursor\');";
+expr+=" var link = document.createElement(\'a\'); link.setAttribute(\'download\', \'"+fn;
+expr+="\'); link.href = \'"+url+"\'; document.body.appendChild(link);";
+//expr+="cursor.style.left=200;";
+expr+=" link.click();";
+StrTy b2="  --app=\"data:text/html,<html><body><script>"+dwb()+"window.moveTo(10,10);window.resizeTo(300,300);"+expr+"</script></body></html>\"";
+return b2;
+} //DownloadApp 
+// the app attempts to download not render or have html do download 
+void BroDownloadApp(const StrTy & fn, const StrTy & url, const IdxTy flags=0)
+{
+BaseBro(flags);
+m_bro+=DownloadApp(fn,url,flags);
 
+} // BroDownloadApp
+fetch_info DownloadOne(const StrTy & fn, const StrTy & url, const IdxTy flags) 
+{
+fetch_info fi;
+DirWatch dw;
+dw.watch(m_download_dir,0);
+LatestDloadKluge();
+// do not need to connect really.. 
+m_port=12000+port_mush();
+StrTy fndir,fnfile;
+Split(fndir,fnfile,fn);
+//r=CmdGet(fi,IdAdd(use_blank?nocmd:nocmd2),flags);
+BroDownloadApp(fnfile,url);
+Launch();
+IdxTy nmax=100;
+MM_ERR(" waiting for download no failure detect "<<MMPR2(url,fn))
+//PollNewDir(dw,fn,nmax,1);
+MM_ERR(MMPR4(fndir,fnfile,url,m_bro))
+// Free () not done for testing
+
+return fi;
+} // DownloadOne
 /*
 // probably overkill for most sites but RG gets messed up. 
  2445  cp Preferences /tmp/Default3/
@@ -1378,20 +1428,8 @@ Exec("cp "+srcdir+"/Cookies "+dir+"/"+prof);
 // 3 outputs are possible but typically only one is meaningful
 // the source and pdf are not mutually exclusive. 
 // self -initialited downloads are not common 
-
-fetch_info One(const StrTy & fn, const StrTy & url, const IdxTy flags) 
+void LatestDloadKluge()
 {
-fetch_info fi;
-const bool print_to_pdf=Bit(flags,0);
-const bool watch_for_dload=Bit(flags,1);
-//DirWatch dw;
-//dw.watch(m_download_dir,0);
-//r=CmdGet(fi,IdAdd(GetDownloadString(fnfile,url,use_blank?1:0)),0);
-//PollNewDir(dw,fn,nmax,1);
-//void DoPrintPdf(fetch_info & fi, const StrTy & fn, const StrTy & url)
-// neeed not naviaget scrap assign
-
-MM_ERR(MMPR4(fn,url,print_to_pdf,watch_for_dload))
 m_tmp_dir="/tmp";
 //m_tmp_dir="/home/documents/cpp/proj/toobib";
 //m_tmp_dir="/home/marchywka";
@@ -1408,6 +1446,22 @@ m_download_dir=m_tmp_dir+"/"+m_download_path;
 m_tmp_dir="/tmp";
 m_profile="Default";
 FixProfile(m_tmp_dir,m_profile);
+} // LatestDloadKluge
+
+fetch_info One(const StrTy & fn, const StrTy & url, const IdxTy flags) 
+{
+fetch_info fi;
+const bool print_to_pdf=Bit(flags,0);
+const bool watch_for_dload=Bit(flags,1);
+//DirWatch dw;
+//dw.watch(m_download_dir,0);
+//r=CmdGet(fi,IdAdd(GetDownloadString(fnfile,url,use_blank?1:0)),0);
+//PollNewDir(dw,fn,nmax,1);
+//void DoPrintPdf(fetch_info & fi, const StrTy & fn, const StrTy & url)
+// neeed not naviaget scrap assign
+
+MM_ERR(MMPR4(fn,url,print_to_pdf,watch_for_dload))
+LatestDloadKluge();
 // this needs to be done from javascript 
 //SetDownloadPath(fi,m_download_dir,1);
 // chrome.exe --user-data-dir="C:\Path\To\CustomProfile" --download.default_directory="C:\Your\Target\DownloadDirectory"
@@ -1415,35 +1469,19 @@ FixProfile(m_tmp_dir,m_profile);
 //m_port=23000;
 m_port=12000+port_mush();
 //BroWorking(url);
-BroDownload(url);
+//BroDownload(url);
+BroRender(url);
 MM_ERR(MMPR(m_bro))
 // setup a watch or time selector in download f-ing dir 
 Launch();
-//Exec(m_bro);
+// needs a flags 
 sleep(2);
 GetTarget(fi,flags);
 GetSession(fi,flags);
 Ragged r=ExecBroCmd(fi,"get_document");
-//Ragged r;
-//int rc=TryOutNode(fi,r,"get_outer_one",StrTy()); 
-StrTy nodeid="3";
-Ragged r2;
 Ss ss;
-MM_LOOP(ii,r)
-{
-const Ragged::Line & l =(*ii);
-const IdxTy len=l.size();
-if (len<4) continue;
-if (l[len-3]!="nodeId") continue;
-nodeid=l[len-1];
-fetch_info ff;
-int rc=TryOutNode(ff,r2,"get_outer_node",nodeid); 
-AppendFi(ss,ff); 
-} // ii
-// only one that works but wrong node wtf 
-//int rc=TryOutNode(fi,r,"get_outer_back",nodeid); 
-//int rc=TryOutNode(fi,r,"get_outer_obj",nodeid); 
-//if (rc==~0U) break; if (rc==0U) { SaveDebug(fi); return fi; }
+Ragged r2;
+GetAllDocNodes(ss,r,r2);
 SaveDebug(fi);
 std::ofstream ofs(fn.length()?fn:StrTy("foof"));
 ofs<<ss.str(); 
@@ -1459,6 +1497,29 @@ fi.doc=ss.str();
 MM_ERR(MMPR(m_bro))
 return fi;
 } // One
+void GetAllDocNodes(Ss & ss,  const Ragged & r, Ragged & r2)
+{
+StrTy nodeid="3";
+MM_LOOP(ii,r)
+{
+const Ragged::Line & l =(*ii);
+const IdxTy len=l.size();
+if (len<4) continue;
+if (l[len-3]!="nodeId") continue;
+nodeid=l[len-1];
+fetch_info ff;
+// only one that works but wrong node wtf 
+//int rc=TryOutNode(fi,r,"get_outer_back",nodeid); 
+//int rc=TryOutNode(fi,r,"get_outer_obj",nodeid); 
+//if (rc==~0U) break; if (rc==0U) { SaveDebug(fi); return fi; }
+int rc=TryOutNode(ff,r2,"get_outer_node",nodeid); 
+AppendFi(ss,ff); 
+} // ii
+
+} // GetAllDocNodex
+
+
+
 void GetTarget(fetch_info&fi, const IdxTy flags )
 {
  Ragged r=ExecBroCmd(fi,"discover_targets");
@@ -2892,6 +2953,7 @@ else if (cmd=="save") { x.save(cip.p1,cip.p2,0); }
 // fn,url
 else if (cmd=="download") { x.download(cip.p1,cip.p2,0); }
 else if (cmd=="one") { x.one(cip.p1,cip.p2,0); }
+else if (cmd=="dloadone") { x.download_one(cip.p1,cip.p2,0); }
 // file, url
 else if (cmd=="wget") { x.download(cip.p1,cip.p2,1); }
 else if (cmd=="close") { x.close(); }
