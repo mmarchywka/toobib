@@ -305,9 +305,14 @@ fetch_info download(const StrTy & fn,const StrTy & url, const IdxTy flags)
 // https://www.researchgate.net/profile/Pravat-Mandal/publication/381585046_Iron_Chelators_and_Alzheimer's_Disease_Clinical_Trials/links/6693f70baf9e615a15e70110/Iron-Chelators-and-Alzheimers-Disease-Clinical-Trials.pdf?origin=publicationDetail&_sg%5B0%5D=ivsif-BwNHIL4btSdmVqcLqUdV6xS5ivOlaRvz3ts9WRlDWQ-Eln-s7iJrVAte0-SOoTASwFNwEYOUPV-egZXw.HH-NO9pWb9gYy1OjRP5nVRKrNfGLY0pa2i9jvRto8apOkVfa6QezAp3B0kFgWepkOdutkPOsHeg_YTb2i8-o3A&_sg%5B1%5D=hcUnOwzWGpbMpyqG4UK4hmQ3bdWwY1_NelNhtDekNjoG6f5aIAmUw7d-EFM9AV0DTLAUpzRsO1k6-k6UsW44b_9o1EK5nEwaaipcwoXmq5Zl.HH-NO9pWb9gYy1OjRP5nVRKrNfGLY0pa2i9jvRto8apOkVfa6QezAp3B0kFgWepkOdutkPOsHeg_YTb2i8-o3A&_iepl=&_rtd=eyJjb250ZW50SW50ZW50IjoibWFpbkl0ZW0ifQ%3D%3D&_tp=eyJjb250ZXh0Ijp7ImZpcnN0UGFnZSI6Il9kaXJlY3QiLCJwYWdlIjoicHVibGljYXRpb24iLCJwb3NpdGlvbiI6InBhZ2VIZWFkZXIifX0
 fetch_info one(const StrTy & fn,const StrTy & url, const IdxTy flags) 
 { return One(fn,url,flags);}
+fetch_info clip_one(const StrTy & fn, const IdxTy flags) 
+{ return One(fn,m_hand.get_clipboard(),flags);}
 
 fetch_info download_one(const StrTy & fn, const StrTy & url, const IdxTy flags) 
 { return  DownloadOne(fn, url,flags) ; } 
+fetch_info download_one(const StrTy & fn, const IdxTy flags) 
+{ return  DownloadOne(fn, m_hand.get_clipboard(),flags) ; } 
+
 
 // this will wait a long time if server fails but should wait for downlaod
 fetch_info wget(const StrTy & fn,const StrTy & url,const IdxTy flags) 
@@ -1384,20 +1389,32 @@ m_bro+=DownloadApp(fn,url,flags);
 } // BroDownloadApp
 fetch_info DownloadOne(const StrTy & fn, const StrTy & url, const IdxTy flags) 
 {
+MM_MSG(MMPR3(fn,url,flags))
 fetch_info fi;
 DirWatch dw;
-dw.watch(m_download_dir,0);
+// may eliminate security check cookies forcing conant re=click
+// but need for RG server download 
 LatestDloadKluge();
+dw.watch(m_download_dir,0);
 // do not need to connect really.. 
 m_port=12000+port_mush();
 StrTy fndir,fnfile;
 Split(fndir,fnfile,fn);
 //r=CmdGet(fi,IdAdd(use_blank?nocmd:nocmd2),flags);
-BroDownloadApp(fnfile,url);
+// This doesn't fing work you have to navigate to page in domain
+// then do a fing download fk.
+//BroDownloadApp(fnfile,url);
+BroRender(url);
 Launch();
 IdxTy nmax=100;
 MM_ERR(" waiting for download no failure detect "<<MMPR2(url,fn))
-//PollNewDir(dw,fn,nmax,1);
+sleep(2);
+GetTarget(fi,flags);
+GetSession(fi,flags);
+Ragged r;
+r=CmdGet(fi,IdAdd(GetDownloadString(fnfile,url,0)),0);
+
+PollNewDir(dw,fn,nmax,1);
 MM_ERR(MMPR4(fndir,fnfile,url,m_bro))
 // Free () not done for testing
 
@@ -1416,19 +1433,22 @@ return fi;
  2453  ls -al /tmp/chromate_downloads/
 
 */
-void FixProfile(const StrTy & dir, const StrTy & prof)
+// this removes download cookie but also any security
+// check cookie and it has to ask all the fing time azzfu
+void FixProfile(const StrTy & dir, const StrTy & prof, const IdxTy flags=9)
 {
 if (dir!="/tmp") return;
+const bool omit_cookies=Bit(flags,0);
 const StrTy srcdir="/home/documents/cpp/proj/toobib";
 Exec("cp "+srcdir+"/Preferences "+dir+"/"+prof);
-Exec("cp "+srcdir+"/Cookies "+dir+"/"+prof);
+if (!omit_cookies) Exec("cp "+srcdir+"/Cookies "+dir+"/"+prof);
 
 
 } // FixProfile
 // 3 outputs are possible but typically only one is meaningful
 // the source and pdf are not mutually exclusive. 
 // self -initialited downloads are not common 
-void LatestDloadKluge()
+void LatestDloadKluge(const IdxTy flags=0)
 {
 m_tmp_dir="/tmp";
 //m_tmp_dir="/home/documents/cpp/proj/toobib";
@@ -1445,11 +1465,12 @@ m_download_path="chromate_downloads";
 m_download_dir=m_tmp_dir+"/"+m_download_path;
 m_tmp_dir="/tmp";
 m_profile="Default";
-FixProfile(m_tmp_dir,m_profile);
+FixProfile(m_tmp_dir,m_profile,flags);
 } // LatestDloadKluge
 
 fetch_info One(const StrTy & fn, const StrTy & url, const IdxTy flags) 
 {
+MM_MSG(MMPR3(fn,url,flags))
 fetch_info fi;
 const bool print_to_pdf=Bit(flags,0);
 const bool watch_for_dload=Bit(flags,1);
@@ -1698,7 +1719,9 @@ const bool moved=e0.moved();
 // TODO check for spurs etc. does not play nice with other
 // instances doh 
 MM_ERR(MMPR4(moved,down,n1,n2))
-if (moved&&!down){if (strncmp(n1.c_str(),n2.c_str(),bnm)==0)  break;} 
+// 2026-07-22 wtf?
+//if (moved&&!down){if (strncmp(n1.c_str(),n2.c_str(),bnm)==0)  break;} 
+if (moved&&!down){  break;} 
 { ++i; if (i>=sz) return 0; } // down 
 } // true
 nm=n2;
@@ -2391,9 +2414,13 @@ m_download_dir=m_tmp_dir+"/"+m_download_path;
 // it nice pdf with doi etc. 
 // 2026-07 maybe swtich back the dir was set after navigate in gotopage?
 // wtf 
-m_download_path=".";
-m_download_dir="/home/marchywka/Downloads";
-MM_MSG(" stupid download for research gate  to "<<MMPR(m_download_dir))
+//m_download_path=".";
+//m_download_dir="/home/marchywka/Downloads";
+//FixProfile();
+// do not update cookied for now, all security check to stay
+// but rg will top downloads 
+LatestDloadKluge(1);
+MM_MSG(" stupid download for research gate  check Pref file "<<MMPR(m_download_dir))
 
 // fucking ignored now? FUCK
 //m_download_path="Downloads";
@@ -2953,7 +2980,9 @@ else if (cmd=="save") { x.save(cip.p1,cip.p2,0); }
 // fn,url
 else if (cmd=="download") { x.download(cip.p1,cip.p2,0); }
 else if (cmd=="one") { x.one(cip.p1,cip.p2,0); }
+else if (cmd=="clipone") { x.clip_one(cip.p1,0); }
 else if (cmd=="dloadone") { x.download_one(cip.p1,cip.p2,0); }
+else if (cmd=="clipdloadone") { x.download_one(cip.p1,0); }
 // file, url
 else if (cmd=="wget") { x.download(cip.p1,cip.p2,1); }
 else if (cmd=="close") { x.close(); }
